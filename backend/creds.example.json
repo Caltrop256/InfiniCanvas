@@ -1,0 +1,19 @@
+{
+    "cloudflareToken": "",
+    "vapid": {
+        "public": "",
+        "private": ""
+    },
+    "discord": {
+        "clientId": "",
+        "clientSecret": "",
+        "redirectUri": "https://canvas.caltrop.dev:5000"
+    },
+    "mySQL": {
+        "host": "localhost",
+        "user": "",
+        "password": "",
+        "database": "canvas_",
+        "multipleStatements": true
+    }
+}

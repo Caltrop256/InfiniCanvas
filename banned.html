@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <style>
+        html {
+            background-color: black;
+        }
+
+        body {
+            text-align: center;
+            color: white;
+            font-family: sans-serif;
+        }
+
+        div {
+            margin-top: 25vh;
+        }
+    </style>
+</head>
+
+<body>
+    <div>
+        <h1>You have been banned from InfiniCanvas</h1>
+        <h2>You will be unbanned in:</h2>
+        <h3 id="duration"></h3>
+    </div>
+
+    <script>
+        var banEnd = __USER_BAN_DURATION_;
+        var h3 = window.document.getElementById('duration');
+
+        if (banEnd == Infinity) {
+            h3.innerHTML = 'never';
+        } else {
+            (loop = function () {
+                var now = new Date().getTime();
+                var remaining = banEnd - now;
+                if (remaining <= 0) window.location.reload(true);
+                else requestAnimationFrame(loop);
+
+                var o = {
+                    day: ~~(remaining / 86400000),
+                    hour: ~~(remaining / 3600000) % 24,
+                    minute: ~~(remaining / 60000) % 60,
+                    second: ~~(remaining / 1000) % 60,
+                }
+                var str = '';
+                for (var t in o)
+                    if (o[t]) str += o[t] + ' ' + (o[t] == 1 ? t : t + 's') + ', ';
+
+                h3.innerHTML = (str ? str.replace(/, ([^,]*)$/, '').replace(/, ([^,]*)$/, ` and $1`) : 'less than a second');;
+            })();
+        }
+    </script>
+</body>

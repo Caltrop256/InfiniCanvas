@@ -1,0 +1,2 @@
+RewriteEngine on
+RewriteRule ^(.*[^/])?$ https://canvas.caltrop.dev:5000/$1 [L]
