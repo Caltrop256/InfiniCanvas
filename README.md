@@ -76,7 +76,7 @@ Shoutouts to:
 
 * [dot-underscore-dot](https://github.com/dot-underscore-dot)
 # License
-The InfiniCanvas is licensed under the **[GNU General Public License v3.0](https://github.com/CaltropUwU/InfiniCanvas/blob/master/LICENSE)**.
+The InfiniCanvas project is licensed under the **[GNU General Public License v3.0](https://github.com/CaltropUwU/InfiniCanvas/blob/master/LICENSE)**.
 <br/>
 <div align="right">
     <b><a href="#InfiniCanvas">↥ back to top</a></b>
