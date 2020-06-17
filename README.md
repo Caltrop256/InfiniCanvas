@@ -16,22 +16,82 @@
 * [Contributors](#Contributors)
 * [License](#License)
 
-# [⬆️](#InfiniCanvas) About
+#  About
 
-# [⬆️](#InfiniCanvas) Tutorial
+<br/>
+<div align="right">
+    <b><a href="#InfiniCanvas">↥ back to top</a></b>
+</div>
+<br/>
 
-## [⬆️](#InfiniCanvas) Panning-and-Zooming
+# Tutorial
 
-## [⬆️](#InfiniCanvas) Placing-Tiles
+<br/>
+<div align="right">
+    <b><a href="#InfiniCanvas">↥ back to top</a></b>
+</div>
+<br/>
 
-# [⬆️](#InfiniCanvas) Contributing
+## Panning-and-Zooming
 
-## [⬆️](#InfiniCanvas) Bug-Reports-and-Feature-Requests
+<br/>
+<div align="right">
+    <b><a href="#InfiniCanvas">↥ back to top</a></b>
+</div>
+<br/>
 
-## [⬆️](#InfiniCanvas) Code-Contributions
+## Placing-Tiles
 
-# [⬆️](#InfiniCanvas) Technical Details
+<br/>
+<div align="right">
+    <b><a href="#InfiniCanvas">↥ back to top</a></b>
+</div>
+<br/>
 
-# [⬆️](#InfiniCanvas) Contributors
+# Contributing
 
-# [⬆️](#InfiniCanvas) License
+<br/>
+<div align="right">
+    <b><a href="#InfiniCanvas">↥ back to top</a></b>
+</div>
+<br/>
+
+## Bug-Reports-and-Feature-Requests
+
+<br/>
+<div align="right">
+    <b><a href="#InfiniCanvas">↥ back to top</a></b>
+</div>
+<br/>
+
+## Code-Contributions
+
+<br/>
+<div align="right">
+    <b><a href="#InfiniCanvas">↥ back to top</a></b>
+</div>
+<br/>
+
+# Technical Details
+
+<br/>
+<div align="right">
+    <b><a href="#InfiniCanvas">↥ back to top</a></b>
+</div>
+<br/>
+
+# Contributors
+
+<br/>
+<div align="right">
+    <b><a href="#InfiniCanvas">↥ back to top</a></b>
+</div>
+<br/>
+
+# License
+
+<br/>
+<div align="right">
+    <b><a href="#InfiniCanvas">↥ back to top</a></b>
+</div>
+<br/>
