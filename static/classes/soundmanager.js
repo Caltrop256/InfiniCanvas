@@ -29,7 +29,6 @@ World.prototype.SoundManager = class SoundManager {
         const audio = this.audioContainers.get(str);
         if (audio) {
             if (audio.currentTime || !audio.playing) {
-                audio.pause();
                 audio.currentTime = 0;
             }
             const promise = audio.play();

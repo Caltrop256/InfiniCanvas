@@ -1,23 +1,13 @@
 "use strict";
 
 var __ES5_ = false;
-var __isIOS_ = (/iPad|iPhone|iPod/.test(window.navigator.userAgent) && !(MSStream in window));
+var __isIOS_;
+if ((/iPad|iPhone|iPod/.test(window.navigator.userAgent)) && !(window.MSStream)) {
+    window.__isIOS_ = true;
+} else {
+    window.__isIOS_ = false;
+};
 (function () {
-
-    if (__isIOS_) {
-        var tag = window.document.getElementById('_viewportTag');
-        var deviceWidth = 0;
-
-        if (matchMedia in window) {
-            for (deviceWidth = 100; !window.matchMedia('(max-device-width: ' + deviceWidth + 'px)').matches; i++) { };
-        } else {
-            deviceWidth = Math.min(window.innerWidth || Infinity, window.screen.width);
-        };
-
-        var scale = (deviceWidth / 1920).toFixed(2);
-        tag.content = 'width=device-width, initial-scale=' + scale + ', maximum-scale=' + scale + ', minimum-scale=' + scale + ' user-scalable=no';
-    };
-
     var js = window.document.createElement('script');
     if (typeof Symbol !== 'undefined') {
         js.src = './build/canvas.ES6.min.js';

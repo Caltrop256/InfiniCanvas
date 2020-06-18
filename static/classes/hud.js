@@ -677,9 +677,11 @@ World.prototype.HUD = class HUD {
             };
         })
 
-        window.addEventListener('touchstart', this.pinchStartCheck);
-        window.addEventListener('touchmove', this.pinch);
-        window.addEventListener('touchend', this.touchStopCheck);
+        if (!window.__isIOS_) {
+            window.addEventListener('touchstart', this.pinchStartCheck);
+            window.addEventListener('touchmove', this.pinch);
+            window.addEventListener('touchend', this.touchStopCheck);
+        }
 
         this.pinching = false;
         this.centerOfPinchStart = new Vector();
@@ -772,7 +774,7 @@ World.prototype.HUD = class HUD {
         const wrapper = window.document.createElement('div');
         if (user.elevated) {
             wrapper.innerHTML = `
-                <img style="width: 64px; height: 64px; border-radius: 50%; position: absolute; top: -20px; left: -20px; border:2px solid white;" src="${user.discordInfo.avatarURL}"></img>
+                <img style="background-color: #282934; width: 64px; height: 64px; border-radius: 50%; position: absolute; top: -20px; left: -20px; border:2px solid white;" src="${user.discordInfo.avatarURL}"></img>
                 <span style="font-size: 18px !important; color: ${user.color.hexString}">${user.name}</span>
                 <span style="font-size: 16px !important">${user.discordInfo.username}#${user.discordInfo.discriminator}</span>
                 <span style="color: grey; font-size: 12px">joined ${world.time(Date.now() - user.joinedAt)} ago</span>

@@ -1,8 +1,6 @@
 html,body {
     height: 100%;
     width: 100%;
-    -webkit-text-size-adjust: none;
-    text-size-adjust: none;
 }
 
 body {
@@ -12,7 +10,6 @@ body {
     border: 0;
     outline: 0;
     background: 0 0;
-    -webkit-overflow-scrolling: touch;
     overflow: hidden;
 }
 
@@ -81,21 +78,16 @@ canvas {
 .mobileZoom {
     position: absolute;
     z-index: 500;
-
-    width: 40%;
-    left: calc(max(110px, 20%) - 35%);
-    top: max(110px, 40%);
-
-    -webkit-transform:rotate(270deg);
-    -moz-transform:rotate(270deg);
-    -o-transform:rotate(270deg);
-    -ms-transform:rotate(270deg);
-    transform:rotate(270deg);
+    top: 200px;
+    left: 16px;
+    height: 40%;
+    width: 16px;
 }
 
 .mobileZoom input {
-    -webkit-appearance: none;
-    width: 100%;
+    writing-mode: bt-lr; /* IE */
+    -webkit-appearance: slider-vertical; /* WebKit */
+    height: 100%;
     border-radius: 5px;  
     background: #282934;
     outline: none;

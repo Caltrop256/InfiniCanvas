@@ -170,8 +170,7 @@ module.exports = class BaseServer {
             <meta name="theme-color" content="${color}">
             <meta name="robots" content="index, follow">
             <meta charset="UTF-8">
-            <meta name="viewport" id="_viewportTag" content="user-scalable=no">
-            <meta name="HandheldFriendly" content="true">
+            <meta name="viewport" content="user-scalable=no">
 
             <meta property="og:type" content="website">
             <meta property="og:url" content="https://caltrop.dev/">

@@ -51,7 +51,7 @@ World.prototype.Settings = class Settings {
         this.set('visibleElements', JSON.stringify({
             fpsWrap: false,
             pingWrap: false,
-            zoomWrap: false,
+            zoomWrap: window.__isIOS_,
             color_container: true,
             coords: true,
             'Screenshot-Mode-Button': true,

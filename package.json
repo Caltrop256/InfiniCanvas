@@ -1,7 +1,7 @@
 {
   "name": "infinicanvas",
   "version": "1.0.0",
-  "description": "",
+  "description": "[Twitter](https://twitter.com/Caltrop256) | [Reddit](https://wwww.reddit.com/r/InfiniCanvas)",
   "main": "index.js",
   "scripts": {
     "build": "node --harmony compile.js",
@@ -12,7 +12,9 @@
   "license": "ISC",
   "dependencies": {
     "acme-dns-01-cloudflare": "^1.2.2",
+    "babel-core": "^6.26.3",
     "canvas": "^2.6.1",
+    "cloudflare": "^2.7.0",
     "discord-oauth2": "^2.2.0",
     "express": "^4.17.1",
     "greenlock": "^4.0.4",
@@ -29,5 +31,13 @@
     "babel-plugin-transform-class-properties": "^6.24.1",
     "babel-preset-env": "^1.7.0",
     "minify": "^5.1.1"
-  }
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/CaltropUwU/InfiniCanvas.git"
+  },
+  "bugs": {
+    "url": "https://github.com/CaltropUwU/InfiniCanvas/issues"
+  },
+  "homepage": "https://github.com/CaltropUwU/InfiniCanvas#readme"
 }
