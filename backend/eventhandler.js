@@ -66,8 +66,25 @@ module.exports = class EventHandler {
 
         if (usages.expiry > this.expiryMax) {
             user.socket.emit('systemMessage', { msg: `You are being rate limited. Please slow down!`, user: null });
-        } else if (str && str.length >= 1 && str.length <= 120) {
-            this.io.emit('chatMessage', { id: user.id, msg: parseText(str) });
+        } else if (str) {
+            const mentions = new Map(),
+                msgId = crypto.randomBytes(8).toString('base64'),
+                parsed = parseText(str).replace(/(?:\s|^)(&lt;@[a-zA-Z0-9_\-]{20,20}&gt;)(?:\s|$)/g, (match) => {
+                    const id = match.trim().substring(5, 25),
+                        user = this.users.get(id);
+
+                    if (user) {
+                        const nMentions = mentions.get(id);
+                        if (!nMentions) this.pushNotif(id, `You have been mentioned by ${user.name}!`)
+                        mentions.set(id, (~~nMentions || 0) + 1);
+                        return ` <span class="chat-mention unselectable" id="chatmention_${id}_${msgId}_n${(~~nMentions || 0) + 1}" style="color: ${user.color.hexString}">@${user.name}</span> `;
+                    } else {
+                        return ` <span class="chat-mention unselectable">@Disconnected User</span> `;
+                    }
+                }).trim();
+            if (parsed.length >= 1) {
+                this.io.emit('chatMessage', { id: user.id, msg: parsed, msgId: msgId, mentions: Array.from(mentions) });
+            }
         }
 
         this.rateTable.set(user.ipH, usages);
@@ -148,7 +165,7 @@ module.exports = class EventHandler {
     changeDetails = function (user, data) {
         if (!(data && typeof data.name != 'undefined' && typeof data.color == 'number' && data.name.toString)) return user.socket.emit('requestRejection', 'Invalid Details');
         const nS = data.name.toString();
-        if (!nS.match(/^[a-zA-Z0-9 \-_.$@€?!#`´']{3,16}$/)) return user.socket.emit('requestRejection', 'Names must be between 3 and 16 characters long and may not include special characters!');
+        if (!nS.match(/^[a-zA-Z0-9 \-_.$€?!#`´']{3,16}$/)) return user.socket.emit('requestRejection', 'Names must be between 3 and 16 characters long and may not include special characters!');
         if (!(data.color >= 0 && data.color <= 0xffffff)) return user.socket.emit('requestRejection', 'Invalid Color!');
 
         if (user.loggedIn && user.name != nS) {

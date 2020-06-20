@@ -339,7 +339,7 @@ class World {
                     this.settings.set('notifyMe', false);
                 }
 
-                if (!name.value.trim().match(/^[a-zA-Z0-9 \-_.$@€?!#`´']{3,16}$/)) return name.style.backgroundColor = 'red';
+                if (!name.value.trim().match(/^[a-zA-Z0-9 \-_.$€?!#`´']{3,16}$/)) return name.style.backgroundColor = 'red';
                 this.socket.emit('changeDetails', { name: name.value.trim(), color: parseInt(color.value.substring(1), 16) });
                 document.getElementsByClassName('blur')[0].style.display = 'none';
                 wrapper.remove();

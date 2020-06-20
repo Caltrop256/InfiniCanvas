@@ -56,10 +56,9 @@ World.prototype.HUD = class HUD {
                 if (users[i][1].name != '__@@UNINITIALISED') {
                     n++;
                     str += `
-                        <div style="cursor:pointer;" id="usListBut_${users[i][0]}">
+                        <div class="users-online-listing" style="cursor:pointer;" id="usListBut_${users[i][0]}">
                             <div style="display: flex; justify-content: space-evenly">
-                                ${users[i][1].elevated ? `<img style="width:16px;height:16px" src="${users[i][1].discordInfo.avatarURL}"></img>` : ''}
-                                <span style="color: ${users[i][1].color.hexString}">${users[i][1].name}</span>
+                                <span style="color: ${users[i][1].color.hexString}">${users[i][1].elevated ? `<img style="width:16px;height:16px" src="${users[i][1].discordInfo.avatarURL}"></img>` : ''}${users[i][1].name}</span>
                             </div>
                             <span style="font-size: 8px">${users[i][0]}</span>
                         </div>
@@ -75,6 +74,8 @@ World.prototype.HUD = class HUD {
 
             if (!n) return;
 
+            n = Math.min(n, 7);
+
             str += '</div>';
             wrapper.innerHTML = str;
             wrapper.style = `
@@ -84,15 +85,16 @@ World.prototype.HUD = class HUD {
                 justify-content: space-evenly;
                 z-Index: 10003;
                 width: 200px;
-                height: ${n * 32 + 16}px;
+                height: ${n * 36 + 16}px;
                 background-color: #282934;
                 border: 2px solid white;
                 color: white;
                 font-family: sans-serif;
                 text-align: center;
                 border-radius: 4px;
-                top: ${e.clientY - (n * 32 + 16)}px;
+                top: ${e.clientY - (n * 36 + 16)}px;
                 left: ${e.clientX}px;
+                overflow-y: auto;
         `
 
             const wrapperRect = wrapper.getBoundingClientRect();
@@ -232,26 +234,34 @@ World.prototype.HUD = class HUD {
                 user = this.parent.users.get(data.id),
                 el = $('history'),
                 scrolledToBottom = (el.scrollTop - 2) == (el.scrollHeight - el.offsetHeight),
-                msgId = ~~(Math.random() * 0xfffff);
+                msgId = data.msgId,
+                d = new Date(),
+                hours = d.getHours().toString().padStart(2, '0'),
+                minutes = d.getMinutes().toString().padStart(2, '0'),
+                seconds = d.getSeconds().toString().padStart(2, '0'),
+                mentions = data.mentions;
 
-            let str = data.msg,
-                mentionsMe = false;
-            // str = str.replace(/(?:\s|^)(&lt;@[a-zA-Z0-9_\-]{20,20}&gt;)(?:\s|$)/g, (match) => {
-            //     const id = match.trim().substring(5, 25),
-            //         user = this.parent.users.get(id);
+            var mentionsme = false;
+            for (let i = 0; i < mentions.length; ++i) {
+                for (let j = 0; j < mentions[i][1]; ++j) {
+                    if (mentions[i][0] == this.parent.socket.id) mentionsme = true;
+                    setTimeout(() => {
+                        window.document.getElementById('chatmention_' + mentions[i][0] + '_' + msgId + '_n' + (j + 1)).addEventListener('click', e => {
+                            this.showuserinfo(mentions[i][0], e);
+                        });
+                    });
+                }
+            }
 
-            //     console.log(match);
+            const messageHTML = `
+                ${user.elevated ? `<img class="chat-avatar" src="${user.discordInfo.avatarURL}"></img> ` : ''}
+                &lt
+                <span class="username" id="chat_usn_but_${user.id}_${msgId}" style="color: ${user.color.hexString}">${(user.name)}</span>
+                &gt
+                <span class="message" ${mentionsme ? 'style="background-color: #FFCB0811 !important"' : ''} id="${msgId}_body">${data.msg}</span>
+                <span class="message-timestamp">${hours}:${minutes}:${seconds}</span>`
 
-            //     if (id == this.parent.socket.id) mentionsMe = true;
-            //     if (user) {
-            //         return ` <span class="chat-mention" style="color: ${user.color.hexString}">@${user.name}</span> `;
-            //     } else {
-            //         return ` <span class="chat-mention">@Disconnected User</span> `;
-            //     }
-            // });
-            // str = str.trim();
-
-            msg.innerHTML = `${user.elevated ? `<img class="chat-avatar" src="${user.discordInfo.avatarURL}"></img> ` : ''}&lt<span class="username" id="chat_usn_but_${user.id}_${msgId}" style="color: ${user.color.hexString}">${(user.name)}</span>&gt<span class="message" ${mentionsMe ? `style="background-color: #C5935744"` : ''}>${str}</span>`
+            msg.innerHTML = messageHTML;
             el.appendChild(msg);
 
             document.getElementById(`chat_usn_but_${user.id}_${msgId}`).addEventListener('click', this.showuserinfo.bind(this, user.id));
@@ -277,7 +287,7 @@ World.prototype.HUD = class HUD {
                         }
                         window.setTimeout(fadeOutRemove, 500, e, o);
                     };
-                previewMessage.innerHTML = `${user.elevated ? `<img class="chat-avatar" src="${user.discordInfo.avatarURL}"></img> ` : ''}&lt<span class="username" style="color: ${user.color.hexString}">${(user.name)}</span>&gt<span class="message">${str}</span>`
+                previewMessage.innerHTML = messageHTML;
                 $('chat_preview').appendChild(previewMessage);
                 $('chat_preview').scrollTo(0, $('chat_preview').scrollHeight);
                 fadeOutRemove(previewMessage, 1);
@@ -293,9 +303,13 @@ World.prototype.HUD = class HUD {
             const msg = window.document.createElement('ul'),
                 el = $('history'),
                 scrolledToBottom = (el.scrollTop - 2) == (el.scrollHeight - el.offsetHeight),
+                d = new Date(),
+                hours = d.getHours().toString().padStart(2, '0'),
+                minutes = d.getMinutes().toString().padStart(2, '0'),
+                seconds = d.getSeconds().toString().padStart(2, '0'),
                 msgId = ~~(Math.random() * 0xfffff);
 
-            msg.innerHTML = `<span class="message" style="color: #FFFF55">${(data.msg)}</span>`;
+            msg.innerHTML = `<span class="message" style="color: #FFFF55">${(data.msg)}</span><span class="message-timestamp">${hours}:${minutes}:${seconds}</span>`;
             if (data.user) {
                 msg.addEventListener('click', (e) => this.showuserinfo(data.user, e));
                 msg.classList.add('special-system-message')
@@ -375,8 +389,33 @@ World.prototype.HUD = class HUD {
             this.canvasVelocityMove = false;
             if (e.inputType == 'insertLineBreak') {
                 const txt = $('messageInput');
-                if (txt.value.length > 0) {
-                    this.parent.socket.emit('sendMessage', txt.value.replace(/[\r\n\x0B\x0C\u0085\u2028\u2029]+/g, ' ').trim());
+                if (txt.value.length > 0 && txt.value.length < 120) {
+                    const str = txt.value
+                        .replace(/[\r\n\x0B\x0C\u0085\u2028\u2029]+/g, ' ')
+                        .replace(/@([a-zA-Z0-9 \-_.$€?!#`´']{3,16})/g, match => {
+                            const users = Array.from(this.parent.users);
+                            let found = null,
+                                foundname = '';
+                            for (let i = 0; i < users.length; ++i) {
+                                if (users[i][1].name.toLowerCase() == match.substring(1).trim().toLowerCase()) {
+                                    found = users[i][0];
+                                    foundname = users[i][1].name;
+                                    break;
+                                }
+                            }
+                            for (let i = 0; i < users.length; ++i) {
+                                if (match.substring(1).trim().toLowerCase().includes(users[i][1].name.toLowerCase())) {
+                                    found = users[i][0];
+                                    foundname = users[i][1].name;
+                                    break;
+                                }
+                            }
+                            if (found) {
+                                return ' <@' + found + '> ' + match.substring(foundname.length + 1);
+                            } else return match;
+                        })
+                        .trim();
+                    this.parent.socket.emit('sendMessage', str);
                 }
                 txt.value = '';
             }
@@ -384,8 +423,24 @@ World.prototype.HUD = class HUD {
 
         $('messageSend').addEventListener('click', () => {
             const txt = $('messageInput');
-            if (txt.value.length > 0) {
-                this.parent.socket.emit('sendMessage', txt.value.replace(/[\r\n\x0B\x0C\u0085\u2028\u2029]+/g, ' ').trim());
+            if (txt.value.length > 0 && txt.value.length < 120) {
+                const str = txt.value
+                    .replace(/[\r\n\x0B\x0C\u0085\u2028\u2029]+/g, ' ')
+                    .replace(/@([a-zA-Z0-9 \-_.$€?!#`´']{3,16})/g, match => {
+                        const users = Array.from(this.parent.users);
+                        let found = null;
+                        for (let i = 0; i < users.length; ++i) {
+                            if (users[i][1].name.toLowerCase() == match.substring(1).trim().toLowerCase()) {
+                                found = users[i][0];
+                                break;
+                            }
+                        }
+                        if (found) {
+                            return ' <@' + found + '> ';
+                        } else return match;
+                    })
+                    .trim();
+                this.parent.socket.emit('sendMessage', str);
             }
             txt.value = '';
         })
@@ -464,7 +519,7 @@ World.prototype.HUD = class HUD {
             document.getElementById('updateUserInfo').onclick = () => {
                 const name = document.getElementById('loginName'),
                     color = document.getElementById('loginColor');
-                if (!name.value.trim().match(/^[a-zA-Z0-9 \-_.$@€?!#`´']{3,16}$/)) return name.style.backgroundColor = 'red';
+                if (!name.value.trim().match(/^[a-zA-Z0-9 \-_.$€?!#`´']{3,16}$/)) return name.style.backgroundColor = 'red';
                 this.parent.socket.emit('changeDetails', { name: name.value.trim(), color: parseInt(color.value.substring(1), 16) });
                 this.parent.settings.set('name', name.value.trim());
                 this.parent.settings.set('color', parseInt(color.value.substring(1), 16));

@@ -100,4 +100,6 @@ dist
 # TernJS port file
 .tern-port
 
+# Project specific
+backups/*
 creds.json

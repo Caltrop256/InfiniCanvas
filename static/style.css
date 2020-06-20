@@ -457,6 +457,10 @@ canvas {
     fill: white;
 }
 
+.users-online-listing:hover {
+    background-color: #1B1F23;
+}
+
 ::-webkit-scrollbar {
     width: 10px;
 }
@@ -486,6 +490,10 @@ canvas {
     margin-left: -30px;
 }
 
+.chat .chat-history ul:hover {
+    background-color: #1B1F23;
+}
+
 .chat .chat-history ul .username {
     text-shadow: -1px 0 black, 0 1px black, 1px 0 black, 0 -1px black;
     font-weight: bold;
@@ -500,6 +508,16 @@ canvas {
     margin-left: 3px;
     overflow-wrap: break-word;
     word-wrap: break-word;
+}
+
+.chat .chat-history ul .message-timestamp {
+    visibility: hidden;
+    color: #55575A;
+    font-size: 11px;
+}
+
+.chat .chat-history ul:hover .message-timestamp {
+    visibility: visible;
 }
 
 .chat .message-box button {
@@ -529,7 +547,15 @@ canvas {
     overflow-y: hidden !important;
 }
 
-.special-system-message:hover {
+.chat-mention {
+    cursor: pointer;
+}
+
+.chat-mention:hover {
+    text-decoration: underline;
+}
+
+.special-system-message:hover .message {
     text-decoration: underline;
     cursor: pointer;
 }
