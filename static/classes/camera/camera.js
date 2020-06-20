@@ -4,12 +4,13 @@ World.prototype.Camera = class Camera {
         this.coordsEl = document.getElementById('coords');
         this.__velocity = new Vector(0, 0);
         this.__keys = new Map();
-        this.__validKeys = this.parent.settings.keybinds
+        this.__validKeys;
         this.__tileManipulationValid = true;
     }
 
     handleKey = (e, i) => {
         if (!this.parent.hud.canvasVelocityMove) return this.__velocity = new Vector();
+        this.__validKeys = Array.from(this.parent.settings.keybinds);
         const key = e.key.toLowerCase();
         if (this.__validKeys.includes(key)) {
             if (i) {

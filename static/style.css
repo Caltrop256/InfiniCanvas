@@ -450,6 +450,7 @@ canvas {
 
 .chat .message-box div .users-online:hover {
     color: white;
+    cursor: pointer;
 }
 
 .chat .message-box div .users-online:hover svg {

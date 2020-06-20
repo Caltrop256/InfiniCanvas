@@ -236,6 +236,7 @@ module.exports = class EventHandler {
                 this.sql.query(`INSERT INTO tokens VALUES ("${nonce}", "${tokenInfo.refresh_token}");`, (err) => { if (err) console.error(err) });
 
                 user.socket.emit('discordAuthentification', { success: true, data: accountInfo, nonce })
+                user.socket.emit('clientInfo', { modStatus: this.moderators.includes(accountInfo.id) });
             })
 
         }
@@ -247,7 +248,7 @@ module.exports = class EventHandler {
             })
                 .then(obtainedToken)
                 .catch(() => {
-                    user.socket.emit('discordAuthentification', { success: false, data: null, nonce: null })
+                    user.socket.emit('discordAuthentification', { success: false, data: null, nonce: null });
                 });
         } else if (type == 'refresh-login') {
             const refreshToken = this.refreshTokens.get(code);
@@ -265,6 +266,12 @@ module.exports = class EventHandler {
                 user.socket.emit('discordAuthentification', { success: false, data: null, nonce: null })
             }
         }
+    }
+
+    requestBan = function (user, data) {
+        if (user.usesDiscord && this.moderators.includes(user.discordInfo.accountInfo.id)) {
+            this.banUser(data.id, data.time * 3.6e+6)
+        } else user.socket.emit('requestRejection', 'Couldn\'t verify identity');
     }
 
     forgetMe = function (user, nonce) {

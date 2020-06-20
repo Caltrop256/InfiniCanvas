@@ -29,12 +29,12 @@ World.prototype.HUD = class HUD {
 
         this.notifs = [];
         this.el = new Map();
-        for (let id of ['tutorialTooltip', 'optionsMenu', 'Screenshot-Mode-Button', 'zoomWrap', 'pingWrap', 'fpsWrap', 'Info-Button', 'chat_preview', 'hud-settings', 'video-settings', 'audio-settings', 'keyboard-settings', 'misc-settings', 'mobileZoomSlider', 'color_container', 'blur', 'messageSend', 'coords', 'teleportButton', 'rateLimitCooldown', 'rateLimitCooldownText', 'chat', 'history', 'fps', 'ping', 'usersOnlineText', 'messageInput', 'rateLimitbar'])
+        for (let id of ['users-online', 'tutorialTooltip', 'optionsMenu', 'Screenshot-Mode-Button', 'zoomWrap', 'pingWrap', 'fpsWrap', 'Info-Button', 'chat_preview', 'hud-settings', 'video-settings', 'audio-settings', 'keyboard-settings', 'misc-settings', 'mobileZoomSlider', 'color_container', 'blur', 'messageSend', 'coords', 'teleportButton', 'rateLimitCooldown', 'rateLimitCooldownText', 'chat', 'history', 'fps', 'ping', 'usersOnlineText', 'messageInput', 'rateLimitbar'])
             this.el.set(id, document.getElementById(id));
 
         const $ = k => this.el.get(k);
 
-        for (let id of ['optionsMenu', 'Screenshot-Mode-Button', 'Info-Button', 'hud-settings', 'video-settings', 'audio-settings', 'keyboard-settings', 'misc-settings', 'messageSend', 'teleportButton']) {
+        for (let id of ['users-online', 'optionsMenu', 'Screenshot-Mode-Button', 'Info-Button', 'hud-settings', 'video-settings', 'audio-settings', 'keyboard-settings', 'misc-settings', 'messageSend', 'teleportButton']) {
             $(id).addEventListener('mouseenter', () => this.parent.sfx.play('snd_hover.ogg'));
             $(id).addEventListener('pointerdown', () => this.parent.sfx.play('snd_select.ogg'));
         };
@@ -42,6 +42,80 @@ World.prototype.HUD = class HUD {
         const _seenNotifs = JSON.parse(this.parent.settings.hasSeenPopup);
         if (_seenNotifs.tutorial) {
             $('tutorialTooltip').style.visibility = 'hidden';
+        };
+
+        $('users-online').onclick = e => {
+            const wrapper = window.document.createElement('div'),
+                users = Array.from(this.parent.users);
+
+            let str = `
+                <div>
+            `, n = 0;
+
+            for (let i = 0; i < users.length; ++i) {
+                if (users[i][1].name != '__@@UNINITIALISED') {
+                    n++;
+                    str += `
+                        <div style="cursor:pointer;" id="usListBut_${users[i][0]}">
+                            <div style="display: flex; justify-content: space-evenly">
+                                ${users[i][1].elevated ? `<img style="width:16px;height:16px" src="${users[i][1].discordInfo.avatarURL}"></img>` : ''}
+                                <span style="color: ${users[i][1].color.hexString}">${users[i][1].name}</span>
+                            </div>
+                            <span style="font-size: 8px">${users[i][0]}</span>
+                        </div>
+                    `
+                    setTimeout(() => {
+                        document.getElementById(`usListBut_${users[i][0]}`).onclick = e => {
+                            remove(e);
+                            this.showuserinfo(users[i][0], e);
+                        }
+                    })
+                }
+            }
+
+            if (!n) return;
+
+            str += '</div>';
+            wrapper.innerHTML = str;
+            wrapper.style = `
+                position: absolute;
+                display: flex;
+                flex-direction: column;
+                justify-content: space-evenly;
+                z-Index: 10003;
+                width: 200px;
+                height: ${n * 32 + 16}px;
+                background-color: #282934;
+                border: 2px solid white;
+                color: white;
+                font-family: sans-serif;
+                text-align: center;
+                border-radius: 4px;
+                top: ${e.clientY - (n * 32 + 16)}px;
+                left: ${e.clientX}px;
+        `
+
+            const wrapperRect = wrapper.getBoundingClientRect();
+            const remove = e => {
+                if (!this.parent.colorPlacer.pointIntersectsBoundingRect(e.clientX, e.clientY, wrapperRect)) {
+                    wrapper.remove();
+                    window.removeEventListener('mousedown', remove);
+                    window.removeEventListener('touchend', removeMobile);
+                    this.el.get('history').style.display = '';
+                }
+            }, removeMobile = e => {
+                remove(this.TouchEventToMouseEvent(e))
+            }
+
+            window.document.body.appendChild(wrapper);
+
+            let sp = e => e.stopPropagation();
+
+            wrapper.addEventListener('mousedown', sp);
+            wrapper.addEventListener('touchend', sp);
+
+            window.addEventListener('mousedown', remove);
+            window.addEventListener('touchend', removeMobile);
         };
 
         $('Info-Button').addEventListener('click', () => {
@@ -771,7 +845,13 @@ World.prototype.HUD = class HUD {
     showuserinfo = (id, e) => {
         const user = this.parent.users.get(id);
         if (!user) return;
-        const wrapper = window.document.createElement('div');
+        const wrapper = window.document.createElement('div'),
+            ban = this.parent.IS_MODERATOR
+                ? `<div style="display: flex">
+                    <input id="banTime" type="number" value="1">
+                    <button id="banBut">ban</button>
+                </div>`
+                : '';
         if (user.elevated) {
             wrapper.innerHTML = `
                 <img style="background-color: #282934; width: 64px; height: 64px; border-radius: 50%; position: absolute; top: -20px; left: -20px; border:2px solid white;" src="${user.discordInfo.avatarURL}"></img>
@@ -779,12 +859,14 @@ World.prototype.HUD = class HUD {
                 <span style="font-size: 16px !important">${user.discordInfo.username}#${user.discordInfo.discriminator}</span>
                 <span style="color: grey; font-size: 12px">joined ${world.time(Date.now() - user.joinedAt)} ago</span>
                 <footer style="justify-self: flex-end; font-size: 8px; color: grey; width: 100%; text-align: center">ID: ${user.id}<br>Discord ID: ${user.discordInfo.id}</footer>
+                ${ban}
             `
         } else {
             wrapper.innerHTML = `
             <span style="color: ${user.color.hexString}">${user.name}</span>
             <span style="font-size: 16px; color: grey">joined ${world.time(Date.now() - user.joinedAt)} ago</span>
             <footer style="justify-self: flex-end; font-size: 8px; color: grey; width: 100%; text-align: center">${user.id}</footer>
+            ${ban}
         `
         }
 
@@ -820,6 +902,12 @@ World.prototype.HUD = class HUD {
         }
 
         window.document.body.appendChild(wrapper);
+
+        var banEl = document.getElementById('banBut');
+        if (banEl) banEl.onclick = () => {
+            const time = +document.getElementById('banTime').value;
+            this.parent.socket.emit('requestBan', { time, id });
+        }
 
         let sp = e => e.stopPropagation();
 

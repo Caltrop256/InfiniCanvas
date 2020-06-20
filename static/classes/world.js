@@ -4,6 +4,8 @@ class World {
         this.CHUNK_SIZE = 64;
         this.CHUNK_SIZE_SQ = this.CHUNK_SIZE * this.CHUNK_SIZE;
 
+        this.IS_MODERATOR = false;
+
         const setFunc = () => {
             try {
                 if (this.settings.fpslocked) {
@@ -71,6 +73,9 @@ class World {
             if (this.hud) {
                 this.hud.updateOtherUserPos();
             }
+        });
+        this.socket.on('clientInfo', data => {
+            if (typeof data.modStatus == 'boolean') this.IS_MODERATOR = data.modStatus;
         });
 
         this.ctxDomEl = document.createElement('canvas');
@@ -282,7 +287,7 @@ class World {
         })
     }
 
-    requestUserAccountData = (change) => {
+    requestUserAccountData = (change, info) => {
         if (this.inLoginscreen) return;
         this.inLoginscreen = true;
         const classicLoginWindow = (discordInfo) => {

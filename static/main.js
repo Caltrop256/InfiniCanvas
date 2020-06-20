@@ -41,6 +41,6 @@ window.addEventListener('load', () => {
     })
 
     const tabm = new TabManager(() => {
-        return window.world = new World(tabm, loop).setState('main');
+        return new World(tabm, loop).setState('main');
     });
 });

@@ -6,7 +6,9 @@ const socketIO = require('socket.io'),
     DiscordOauth2 = require("discord-oauth2"),
     { createCanvas } = require('canvas'),
     Color = require('../static/classes/color.js'),
+    fs = require('fs'),
     { WeakVector, Vector } = require('../static/classes/vector.js');
+const { fstat } = require('fs');
 
 module.exports = class Manager {
     constructor(server) {
@@ -28,6 +30,22 @@ module.exports = class Manager {
         this.chunkCache = new Map();
         this.thumbnailCache = new Map();
         this.changedChunks = new Set();
+
+        this.moderators = this.config.mods;
+
+        this.nextBackupTimestamp = Infinity;
+        this.backUpDelay = 8.64e+7;
+        this.maxFiles = 5;
+
+        fs.readdir('./backups', (err, files) => {
+            if (err) throw err;
+            if (!files.length) {
+                this.nextBackupTimestamp = Date.now();
+            } else {
+                const data = files.map(f => Number(f.split('.json')[0])).sort((a, b) => b - a);
+                this.nextBackupTimestamp = data[0] + this.backUpDelay;
+            }
+        })
 
         this.rateTable = new Map();
         this.burstMax = 2;
@@ -154,6 +172,8 @@ module.exports = class Manager {
                             console.log(`Deleted ${chunksB4Purge - this.chunkCache.size} chunks from the cache!`);
                         })
                 }
+
+                if (Date.now() >= this.nextBackupTimestamp) this.createBackUp();
             }
             setTimeout(this.loop, 1000, ++i);
         })(0);
@@ -432,5 +452,36 @@ module.exports = class Manager {
                     .catch(reject);
             })
         })
+    }
+
+    createBackUp = () => {
+        this.storeChangedChunks().then(() => {
+            this.sql.query('select * from chunks', (err, rows) => {
+                if (err) return console.error(err);
+                const data = JSON.stringify({
+                    meta: {
+                        chunkSize: global.CHUNK_SIZE,
+                        compressionType: 'Run-length Encoding Radix16',
+                        colors: 16,
+                        timestamp: this.nextBackupTimestamp
+                    },
+                    chunkData: rows.map(r => [r.x, r.y, r.data])
+                });
+
+                fs.writeFile(`./backups/${this.nextBackupTimestamp}.json`, data, (err) => {
+                    if (err) throw err;
+                    this.nextBackupTimestamp += this.backUpDelay;
+                    fs.readdir('./backups', (err, files) => {
+                        if (err) throw err;
+                        if (files.length > this.maxFiles) {
+                            const data = files.map(f => Number(f.split('.json')[0])).sort((a, b) => b - a);
+                            fs.unlink(`./backups/${data[data.length - 1]}.json`, (err) => {
+                                if (err) throw err;
+                            })
+                        }
+                    })
+                })
+            })
+        });
     }
 }
