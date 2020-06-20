@@ -60,6 +60,8 @@ module.exports = class EventHandler {
         const str = String(data),
             usages = this.rateTable.get(user.ipH);
 
+        const _id = user.id;
+
         if (usages.count >= this.burstMax) {
             usages.expiry *= 2;
         } else usages.count += 1;
@@ -75,7 +77,7 @@ module.exports = class EventHandler {
 
                     if (user) {
                         const nMentions = mentions.get(id);
-                        if (!nMentions) this.pushNotif(id, `You have been mentioned by ${user.name}!`)
+                        if (!nMentions) this.pushNotif(id, `You have been mentioned by ${this.users.get(_id).name}!`)
                         mentions.set(id, (~~nMentions || 0) + 1);
                         return ` <span class="chat-mention unselectable" id="chatmention_${id}_${msgId}_n${(~~nMentions || 0) + 1}" style="color: ${user.color.hexString}">@${user.name}</span> `;
                     } else {

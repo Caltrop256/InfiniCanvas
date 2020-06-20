@@ -511,13 +511,13 @@ canvas {
 }
 
 .chat .chat-history ul .message-timestamp {
-    visibility: hidden;
+    display: none;
     color: #55575A;
     font-size: 11px;
 }
 
 .chat .chat-history ul:hover .message-timestamp {
-    visibility: visible;
+    display: inline-block;
 }
 
 .chat .message-box button {
