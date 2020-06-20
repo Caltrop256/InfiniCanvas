@@ -4,8 +4,8 @@ World.prototype.ChunkData = class ChunkData {
         this.data = Uint8ClampedArray.from(data);
     }
 }
-World.prototype.ChunkData.parse = s => {
-    let a = new Uint8ClampedArray(world.CHUNK_SIZE_SQ),
+World.prototype.ChunkData.parse = (s, chunkSize) => {
+    let a = new Uint8ClampedArray(chunkSize * chunkSize),
         index = 0,
         sA = s.split(',');
     for (let i = 0; i < sA.length; ++i) {

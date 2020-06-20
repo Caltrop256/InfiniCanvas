@@ -30,7 +30,7 @@ World.prototype.Canvas = class Canvas {
             for (let i = 0; i < data.length; ++i) {
                 const chunk = data[i];
                 this._requests.delete(chunk[0]);
-                const parsedData = this.parent.ChunkData.parse(chunk[1])
+                const parsedData = this.parent.ChunkData.parse(chunk[1], this.parent.CHUNK_SIZE)
                 this._chunkCache.set(chunk[0], parsedData);
                 newData.push([chunk[0], parsedData]);
             }
@@ -40,8 +40,8 @@ World.prototype.Canvas = class Canvas {
         this.parent.socket.on('chunkUpdate', data => {
             const dataLocStr = Vector.from(data.v).toString();
             if (this._chunkCache.get(dataLocStr)) {
-                this._chunkCache.set(dataLocStr, this.parent.ChunkData.parse(data.d));
-                this.chunkUpdateReceived(dataLocStr, this.parent.ChunkData.parse(data.d));
+                this._chunkCache.set(dataLocStr, this.parent.ChunkData.parse(data.d, this.parent.CHUNK_SIZE));
+                this.chunkUpdateReceived(dataLocStr, this.parent.ChunkData.parse(data.d, this.parent.CHUNK_SIZE));
             }
         })
 

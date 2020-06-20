@@ -857,14 +857,14 @@ World.prototype.HUD = class HUD {
                 <img style="background-color: #282934; width: 64px; height: 64px; border-radius: 50%; position: absolute; top: -20px; left: -20px; border:2px solid white;" src="${user.discordInfo.avatarURL}"></img>
                 <span style="font-size: 18px !important; color: ${user.color.hexString}">${user.name}</span>
                 <span style="font-size: 16px !important">${user.discordInfo.username}#${user.discordInfo.discriminator}</span>
-                <span style="color: grey; font-size: 12px">joined ${world.time(Date.now() - user.joinedAt)} ago</span>
+                <span style="color: grey; font-size: 12px">joined ${this.parent.time(Date.now() - user.joinedAt)} ago</span>
                 <footer style="justify-self: flex-end; font-size: 8px; color: grey; width: 100%; text-align: center">ID: ${user.id}<br>Discord ID: ${user.discordInfo.id}</footer>
                 ${ban}
             `
         } else {
             wrapper.innerHTML = `
             <span style="color: ${user.color.hexString}">${user.name}</span>
-            <span style="font-size: 16px; color: grey">joined ${world.time(Date.now() - user.joinedAt)} ago</span>
+            <span style="font-size: 16px; color: grey">joined ${this.parent.time(Date.now() - user.joinedAt)} ago</span>
             <footer style="justify-self: flex-end; font-size: 8px; color: grey; width: 100%; text-align: center">${user.id}</footer>
             ${ban}
         `
