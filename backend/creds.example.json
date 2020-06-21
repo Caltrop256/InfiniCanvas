@@ -1,12 +1,12 @@
 {
-    "cloudflareToken": "",
+    "cloudflareToken": "(only used in https mode) your cloudflare token API, must be able to Zone.Zone Read & Zone.DNS Edit",
     "vapid": {
-        "public": "",
+        "public": "used for push notifications",
         "private": ""
     },
     "discord": {
-        "clientId": "",
-        "clientSecret": "",
+        "clientId": "id of your discord oauth2 application",
+        "clientSecret": "must be able to read basic account information",
         "redirectUri": "https://canvas.caltrop.dev:5000"
     },
     "mySQL": {
@@ -15,5 +15,9 @@
         "password": "",
         "database": "canvas_",
         "multipleStatements": true
-    }
+    },
+    "mods": [
+        "Discord_ids here",
+        "this allows specific users to ban others"
+    ]
 }

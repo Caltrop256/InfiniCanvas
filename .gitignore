@@ -103,3 +103,4 @@ dist
 # Project specific
 backups/*
 creds.json
+package-lock.json

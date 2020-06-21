@@ -30,9 +30,26 @@
 Navigate to the directory in which you want to save the project in.
 
 Clone the repository (this will create a new folder).
+
 `$ git clone https://github.com/caltropuwu/infinicanvas`
+
 Move into the directory.
+
 `$ cd infinicanvas`
+
+Install dependencies.
+
+`$ npm install --save`
+
+Rename `creds.example.json` to `creds.json` (located in /backend) and fill out all relevant information.
+
+InfiniCanvas uses MySQL to store data. Make sure a server is running locally. Create a database and execute the queries found in /tables.sql.
+
+Start the application
+
+`$ node --harmony app.js`
+
+The server should now be online on `http://localhost:5000/`!
 
 
 # Tutorial
