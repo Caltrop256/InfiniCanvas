@@ -255,9 +255,7 @@ World.prototype.HUD = class HUD {
 
             const messageHTML = `
                 ${user.elevated ? `<img class="chat-avatar" src="${user.discordInfo.avatarURL}"></img> ` : ''}
-                &lt
-                <span class="username" id="chat_usn_but_${user.id}_${msgId}" style="color: ${user.color.hexString}">${(user.name)}</span>
-                &gt
+                &lt<span class="username" id="chat_usn_but_${user.id}_${msgId}" style="color: ${user.color.hexString}">${(user.name)}</span>&gt
                 <span class="message" ${mentionsme ? 'style="background-color: #FFCB0811 !important"' : ''} id="${msgId}_body">${data.msg}</span>
                 <span class="message-timestamp">${hours}:${minutes}:${seconds}</span>`
 

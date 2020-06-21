@@ -1,10 +1,10 @@
 {
   "name": "infinicanvas",
   "version": "1.0.0",
-  "description": "[Twitter](https://twitter.com/Caltrop256) | [Reddit](https://wwww.reddit.com/r/InfiniCanvas)",
-  "main": "index.js",
+  "description": "An infinite canvas",
+  "main": "app.js",
   "scripts": {
-    "build": "node --harmony compile.js",
+    "run": "node --harmony app.js --compile --https --port 5000 --size 64",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],

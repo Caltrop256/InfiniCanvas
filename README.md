@@ -7,6 +7,7 @@
 ## Table of Contents
 
 * [About](#About)
+* [Building](#Building)
 * [Tutorial](#Tutorial)
     * [Panning and Zooming](#Panning-and-Zooming)
     * [Placing Tiles](#Placing-Tiles)
@@ -23,6 +24,16 @@
     <b><a href="#InfiniCanvas">↥ back to top</a></b>
 </div>
 <br/>
+
+# Building
+
+Navigate to the directory in which you want to save the project in.
+
+Clone the repository (this will create a new folder).
+`$ git clone https://github.com/caltropuwu/infinicanvas`
+Move into the directory.
+`$ cd infinicanvas`
+
 
 # Tutorial
 In the following you will learn about the basics of navigating and editing the canvas!
