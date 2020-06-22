@@ -12,6 +12,8 @@ window.addEventListener('load', () => {
                 this.fractionPassed = 0;
                 this.secondsPassed++;
 
+                this.hud.el.get('usersOnlineText').innerHTML = Array.from(this.users).filter(u => u[1].name != '__@@UNINITIALISED').length;
+
                 if (this.secondsPassed > 45) {
                     this.secondsPassed = 0;
 
@@ -36,11 +38,11 @@ window.addEventListener('load', () => {
 
             this.timeElapsed = 0;
 
-            this.socket.emit('posInfo', { pos: this.isFocused && this.settings.transmitPosition ? this.mousePosition : { x: null, y: null }, timestamp: Date.now(), verletTile: { active: !!this.colorPlacer.canvas, color: this.colorPlacer.selectedColor } });
+            this.socket.emit('posInfo', { mobile: this._isMobile, pos: this.isFocused && this.settings.transmitPosition ? this.mousePosition : { x: null, y: null }, timestamp: Date.now(), verletTile: { active: !!this.colorPlacer.canvas, color: this.colorPlacer.selectedColor } });
         }
     })
 
     const tabm = new TabManager(() => {
-        return new World(tabm, loop).setState('main');
+        return window.world = new World(tabm, loop).setState('main');
     });
 });

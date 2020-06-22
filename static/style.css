@@ -13,12 +13,13 @@ body {
     overflow: hidden;
 }
 
-a:link, a:visited {
+a:link, a:visited, .location-link {
     text-decoration: none;
     color: #00B0F4;
+    cursor: pointer;
 }
 
-a:hover, a:active {
+a:hover, a:active, .location-link:hover {
     text-decoration: underline;
     color: #00B0F4;
 }
@@ -401,12 +402,26 @@ canvas {
     height: 100%;
     top: 0px;
     left: 0px;
+    transition: margin-left 0.5s ease-in-out;
+}
+
+.chat-toggle {
+    z-Index: 1003;
+    margin-bottom: 10px;
+    height: 150px;
+    border: 1px solid #282934;
+    background-color: #888;
+    display: none;
+}
+
+.chat-toggle:focus {
+    outline: 0;
 }
 
 .chat {
-    z-index: 1000;
+    z-index: 1002;
     min-width: 300px;
-    width: 25%;
+    width: 300px;
     float: left;
     background: #282934;
     border-top-right-radius: 5px;

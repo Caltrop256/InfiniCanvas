@@ -1,3 +1,5 @@
+const { Vector } = require("./vector");
+
 class World {
     constructor(socket) {
 
@@ -5,6 +7,10 @@ class World {
         this.CHUNK_SIZE_SQ = this.CHUNK_SIZE * this.CHUNK_SIZE;
 
         this.IS_MODERATOR = false;
+
+        this._isMobile = false;
+        this.fingerSize = 64;
+        this.isMobile = ((a) => (/(android|bb\d+|meego).+mobile|avantgo|bada\/|blackberry|blazer|compal|elaine|fennec|hiptop|iemobile|ip(hone|od)|iris|kindle|lge |maemo|midp|mmp|mobile.+firefox|netfront|opera m(ob|in)i|palm( os)?|phone|p(ixi|re)\/|plucker|pocket|psp|series(4|6)0|symbian|treo|up\.(browser|link)|vodafone|wap|windows ce|xda|xiino/i.test(a) || /1207|6310|6590|3gso|4thp|50[1-6]i|770s|802s|a wa|abac|ac(er|oo|s\-)|ai(ko|rn)|al(av|ca|co)|amoi|an(ex|ny|yw)|aptu|ar(ch|go)|as(te|us)|attw|au(di|\-m|r |s )|avan|be(ck|ll|nq)|bi(lb|rd)|bl(ac|az)|br(e|v)w|bumb|bw\-(n|u)|c55\/|capi|ccwa|cdm\-|cell|chtm|cldc|cmd\-|co(mp|nd)|craw|da(it|ll|ng)|dbte|dc\-s|devi|dica|dmob|do(c|p)o|ds(12|\-d)|el(49|ai)|em(l2|ul)|er(ic|k0)|esl8|ez([4-7]0|os|wa|ze)|fetc|fly(\-|_)|g1 u|g560|gene|gf\-5|g\-mo|go(\.w|od)|gr(ad|un)|haie|hcit|hd\-(m|p|t)|hei\-|hi(pt|ta)|hp( i|ip)|hs\-c|ht(c(\-| |_|a|g|p|s|t)|tp)|hu(aw|tc)|i\-(20|go|ma)|i230|iac( |\-|\/)|ibro|idea|ig01|ikom|im1k|inno|ipaq|iris|ja(t|v)a|jbro|jemu|jigs|kddi|keji|kgt( |\/)|klon|kpt |kwc\-|kyo(c|k)|le(no|xi)|lg( g|\/(k|l|u)|50|54|\-[a-w])|libw|lynx|m1\-w|m3ga|m50\/|ma(te|ui|xo)|mc(01|21|ca)|m\-cr|me(rc|ri)|mi(o8|oa|ts)|mmef|mo(01|02|bi|de|do|t(\-| |o|v)|zz)|mt(50|p1|v )|mwbp|mywa|n10[0-2]|n20[2-3]|n30(0|2)|n50(0|2|5)|n7(0(0|1)|10)|ne((c|m)\-|on|tf|wf|wg|wt)|nok(6|i)|nzph|o2im|op(ti|wv)|oran|owg1|p800|pan(a|d|t)|pdxg|pg(13|\-([1-8]|c))|phil|pire|pl(ay|uc)|pn\-2|po(ck|rt|se)|prox|psio|pt\-g|qa\-a|qc(07|12|21|32|60|\-[2-7]|i\-)|qtek|r380|r600|raks|rim9|ro(ve|zo)|s55\/|sa(ge|ma|mm|ms|ny|va)|sc(01|h\-|oo|p\-)|sdk\/|se(c(\-|0|1)|47|mc|nd|ri)|sgh\-|shar|sie(\-|m)|sk\-0|sl(45|id)|sm(al|ar|b3|it|t5)|so(ft|ny)|sp(01|h\-|v\-|v )|sy(01|mb)|t2(18|50)|t6(00|10|18)|ta(gt|lk)|tcl\-|tdg\-|tel(i|m)|tim\-|t\-mo|to(pl|sh)|ts(70|m\-|m3|m5)|tx\-9|up(\.b|g1|si)|utst|v400|v750|veri|vi(rg|te)|vk(40|5[0-3]|\-v)|vm40|voda|vulc|vx(52|53|60|61|70|80|81|83|85|98)|w3c(\-| )|webc|whit|wi(g |nc|nw)|wmlb|wonu|x700|yas\-|your|zeto|zte\-/i.test(a.substr(0, 4))))(navigator.userAgent || navigator.vendor || window.opera);
 
         const setFunc = () => {
             try {
@@ -64,10 +70,17 @@ class World {
                 this.canvas.drawAll();
             }
             this.users.set(data.id, data);
+            this.hud.el.get('usersOnlineText').innerHTML = Array.from(this.users).filter(u => u[1].name != '__@@UNINITIALISED').length;
         });
         this.socket.on('requestUserData', this.requestUserAccountData);
-        this.socket.on('userLeave', id => this.users.delete(id));
-        this.socket.on('allUserData', data => this.users = new Map(data));
+        this.socket.on('userLeave', id => {
+            this.users.delete(id);
+            this.hud.el.get('usersOnlineText').innerHTML = Array.from(this.users).filter(u => u[1].name != '__@@UNINITIALISED').length;
+        })
+        this.socket.on('allUserData', data => {
+            this.users = new Map(data);
+            this.hud.el.get('usersOnlineText').innerHTML = data.filter(u => u[1].name != '__@@UNINITIALISED').length;
+        });
         this.socket.on('userPositions', data => {
             this.userCoords = data;
             if (this.hud) {
@@ -92,6 +105,8 @@ class World {
 
         window.addEventListener('focus', () => {
             this.isFocused = true;
+            this.camera.__keys = new Map();
+            this.camvas.__velocity = new Vector();
             if (this.worker) {
                 this.worker.getNotifications().then(notifs => {
                     if (notifs && notifs.length) {
@@ -103,12 +118,8 @@ class World {
             }
         });
         window.addEventListener('blur', () => this.isFocused = false);
+        window.addEventListener('resize', this.resize);
 
-        document.addEventListener('touchmove', function (event) {
-            if (event.scale !== 1) { event.preventDefault(); }
-        }, false);
-
-        window.addEventListener('resize', () => !this.usingWebGl ? this.canvas.adjustScaling() : 0);
         window.addEventListener('keydown', e => this.loggedIn ? this.camera.handleKey(e, 1) : 0);
         window.addEventListener('keyup', e => this.loggedIn ? this.camera.handleKey(e, 0) : 0);
 
@@ -156,16 +167,10 @@ class World {
             if (window.location.pathname.length <= 2) {
                 v = Vector.from(this.settings._pos);
             } else {
-                v = Vector.from(window.location.pathname.substring(2)).cap(-2147483648 * this.CHUNK_SIZE, 2147483647 * this.CHUNK_SIZE);
+                v = Vector.from(window.location.pathname.substring(2));
             }
             if (isFinite(v.x) && isFinite(v.y)) {
-                if (this.usingWebGl) {
-                    this.camera.pos.x = v.x / this.CHUNK_SIZE;
-                    this.camera.pos.y = v.y / this.CHUNK_SIZE;
-                } else {
-                    this.camera._offset = Vector.from(v).sub(new Vector(window.innerWidth, window.innerHeight).mult(0.5).div(this.camera.tileSize)).div(this.CHUNK_SIZE);
-                }
-                this.canvas.drawAll();
+                this.teleportTo(v.x, v.y, true);
             };
         } catch (e) { };
 
@@ -199,6 +204,58 @@ class World {
 
     set preferCTX(v) {
         return this.settings.set('preferCTX', v);
+    }
+
+    get isMobile() {
+        return this._isMobile;
+    }
+
+    set isMobile(b) {
+        if (this._isMobile) return true;
+        this._isMobile = b;
+        if (this._isMobile) {
+            const func = () => {
+                this.colorPlacer.domEl.style.width = '60%';
+                this.resize();
+            };
+            if (this.colorPlacer) func();
+            else setTimeout(func, 4);
+        }
+        return this._isMobile;
+    }
+
+    resize = () => {
+        if (!this.usingWebGl) this.canvas.adjustScaling();
+        if (!this.colorPlacer) return;
+
+        if (this._isMobile) {
+            const b = this.colorPlacer.domEl,
+                a = this.hud.el.get('chat');
+
+            if (a.offsetTop < b.offsetTop) {
+                if (!this.hud.chatExtenderButtonActive) {
+                    this.hud.chatExtenderButtonActive = true;
+                    this.hud.el.get('chatToggle').style.display = 'block';
+                    this.hud.hideChat();
+                }
+            } else if (this.hud.chatExtenderButtonActive) {
+                this.hud.chatExtenderButtonActive = false;
+                this.hud.el.get('chatToggle').style.display = 'none';
+                this.hud.showChat();
+            }
+            b.style.height = b.clientWidth * 0.25 + 'px';
+            b.style.transform = 'translate(-50%, -' + (b.clientHeight) + 'px)';
+            var child = b.firstChild,
+                i = 0,
+                mult = b.clientWidth * 0.125;
+            while (child) {
+                child.style.top = (~~(i / 8) * mult) + 'px';
+                child.style.left = ((i % 8) * mult) + 'px';
+                child.style.width = (child.style.height = mult + 'px');
+                i++;
+                child = child.nextSibling;
+            };
+        }
     }
 
     changeToCTX = () => {
@@ -267,6 +324,41 @@ class World {
         this.hud.updateHash();
     }
 
+    teleportTo = (v, n1, dontupdatehash) => {
+        const destination = (typeof n1 != 'undefined' ? new Vector(Number(v), Number(n1)) : Vector.from(v))
+            .cap(-2147483648 * this.CHUNK_SIZE, 2147483647 * this.CHUNK_SIZE);
+
+        if (this.usingWebGl) {
+            destination.sub(new Vector(window.innerWidth, window.innerHeight).mult(0.5).div(this.camera.tileSize)).div(this.CHUNK_SIZE);
+            this.camera.pos.x = destination.x;
+            this.camera.pos.y = destination.y;
+
+            const seenNotifs = JSON.parse(this.settings.hasSeenPopup);
+            if (!seenNotifs.floatingPointInaccuracies && (Math.abs(destination.x) > 95000 || Math.abs(destination.y) > 95000)) {
+                const info = this.hud.createNotification(200, 200, 10000);
+                info.body.innerHTML = `
+                    <span>You might experience graphical issues with the GPU rendering mode when being far away from 0,0!</span>
+                    <button id="switchToCPUBut">Switch to CPU Rendering</button>
+                `
+                document.getElementById('switchToCPUBut').onclick = () => {
+                    this.preferCTX = true;
+                    this.changeToCTX();
+                    info.close();
+                }
+                seenNotifs.floatingPointInaccuracies = true;
+                this.settings.set('hasSeenPopup', JSON.stringify(seenNotifs));
+            }
+        } else {
+            this.camera._offset = destination.sub(new Vector(window.innerWidth, window.innerHeight).mult(0.5).div(this.camera.tileSize)).div(this.CHUNK_SIZE);
+        }
+        this.canvas.drawAll();
+        if (!dontupdatehash) this.hud.updateHash();
+    }
+
+    getCenteredCoords = () => (Vector.from(this.usingWebGl ? this.camera.pos : this.camera._offset)
+        .mult(this.CHUNK_SIZE)
+        .add(new Vector(window.innerWidth, window.innerHeight).mult(0.5).div(this.camera.tileSize)));
+
     managePushNotif = () => {
         if (!this.canUsePushNotifications) return console.warn("Push Notifications Unsupported");
         Notification.requestPermission().then(perm => {
@@ -287,7 +379,7 @@ class World {
         })
     }
 
-    requestUserAccountData = (change, info) => {
+    requestUserAccountData = (change) => {
         if (this.inLoginscreen) return;
         this.inLoginscreen = true;
         const classicLoginWindow = (discordInfo) => {

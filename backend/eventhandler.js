@@ -54,7 +54,7 @@ module.exports = class EventHandler {
         if (!(data && data.pos && data.timestamp)) return user.socket.emit('requestRejection', 'Invalid Ping');
         user.socket.emit('latency', { sent: data.timestamp, received: Date.now() });
         user.cameraPosition = Vector.from(data.pos);
-        this.userPositions.set(user.id, { x: cap(data.pos.x, -2147483648, 2147483647), y: cap(data.pos.y, -2147483648, 2147483647), verlet: data.verletTile });
+        this.userPositions.set(user.id, { x: cap(data.pos.x, -2147483648, 2147483647), y: cap(data.pos.y, -2147483648, 2147483647), verlet: data.verletTile, mobile: !!data.mobile });
     }
     sendMessage = function (user, data) {
         const str = String(data),
@@ -84,7 +84,7 @@ module.exports = class EventHandler {
                         return ` <span class="chat-mention unselectable">@Disconnected User</span> `;
                     }
                 }).trim();
-            if (parsed.length >= 1) {
+            if (parsed.replace(/<.+?>/g, '').length <= 128) {
                 this.io.emit('chatMessage', { id: user.id, msg: parsed, msgId: msgId, mentions: Array.from(mentions) });
             }
         }

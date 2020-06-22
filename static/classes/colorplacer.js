@@ -97,7 +97,7 @@ World.prototype.ColorPlacer = class ColorPlacer {
             }
         } else {
             if (!this.hoveringHud) {
-                const tilePos = this.parent.camera.mouseToTileSpace(this.lastMousePos).realFloor(),
+                const tilePos = this.parent.camera.mouseToTileSpace(this.parent._isMobile ? Vector.from(this.lastMousePos).add(new Vector(-this.parent.fingerSize, -this.parent.fingerSize)) : this.lastMousePos).realFloor(),
                     ts = this.parent.camera.tileSize,
                     ox = (this.parent.camera._offset.x * this.parent.CHUNK_SIZE * ts),
                     oy = (this.parent.camera._offset.y * this.parent.CHUNK_SIZE * ts),
@@ -114,7 +114,9 @@ World.prototype.ColorPlacer = class ColorPlacer {
                 this.ctx.lineWidth = 2;
                 this.ctx.stroke();
             }
-            this.verletEntity.update(this.ctx);
+            if (this.parent._isMobile) {
+                this.verletEntity.update(this.ctx, Vector.from(this.lastMousePos).add(new Vector(-this.parent.fingerSize, -this.parent.fingerSize)));
+            } else this.verletEntity.update(this.ctx);
         }
     }
 
@@ -219,7 +221,9 @@ World.prototype.ColorPlacer = class ColorPlacer {
         window.removeEventListener('touchmove', this.touchMove);
 
         if (e.type == 'touchend') e = this.parent.hud.TouchEventToMouseEvent(e);
-        const pos = this.parent.camera.mouseToTileSpace(new Vector(e.clientX, e.clientY)),
+        const pos = this.parent.camera.mouseToTileSpace(this.parent._isMobile
+            ? new Vector(e.clientX, e.clientY).add(new Vector(-this.parent.fingerSize, -this.parent.fingerSize))
+            : new Vector(e.clientX, e.clientY)),
             chunk = Vector.from(pos).div(this.parent.CHUNK_SIZE).realFloor();
         if (this.hoveringHud || !this.parent.canvas._chunkCache.get(chunk.toString())) return this._destroyCanvas();
 

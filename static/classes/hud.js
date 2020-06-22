@@ -4,6 +4,8 @@ World.prototype.HUD = class HUD {
         this.canvasVelocityMove = false;
         this.chatFocused = false;
 
+        this.chatExtenderButtonActive = false;
+
         this.userCanvas = window.document.createElement('canvas');
         this.uCTX = this.userCanvas.getContext('2d');
         this.userCanvas.style = `display: block; pointer-events: none; background-color: transparent`
@@ -29,12 +31,12 @@ World.prototype.HUD = class HUD {
 
         this.notifs = [];
         this.el = new Map();
-        for (let id of ['users-online', 'tutorialTooltip', 'optionsMenu', 'Screenshot-Mode-Button', 'zoomWrap', 'pingWrap', 'fpsWrap', 'Info-Button', 'chat_preview', 'hud-settings', 'video-settings', 'audio-settings', 'keyboard-settings', 'misc-settings', 'mobileZoomSlider', 'color_container', 'blur', 'messageSend', 'coords', 'teleportButton', 'rateLimitCooldown', 'rateLimitCooldownText', 'chat', 'history', 'fps', 'ping', 'usersOnlineText', 'messageInput', 'rateLimitbar'])
+        for (let id of ['chatWrap', 'chatToggle', 'users-online', 'tutorialTooltip', 'optionsMenu', 'Screenshot-Mode-Button', 'zoomWrap', 'pingWrap', 'fpsWrap', 'Info-Button', 'chat_preview', 'hud-settings', 'video-settings', 'audio-settings', 'keyboard-settings', 'misc-settings', 'mobileZoomSlider', 'color_container', 'blur', 'messageSend', 'coords', 'teleportButton', 'rateLimitCooldown', 'rateLimitCooldownText', 'chat', 'history', 'fps', 'ping', 'usersOnlineText', 'messageInput', 'rateLimitbar'])
             this.el.set(id, document.getElementById(id));
 
         const $ = k => this.el.get(k);
 
-        for (let id of ['users-online', 'optionsMenu', 'Screenshot-Mode-Button', 'Info-Button', 'hud-settings', 'video-settings', 'audio-settings', 'keyboard-settings', 'misc-settings', 'messageSend', 'teleportButton']) {
+        for (let id of ['chatToggle', 'users-online', 'optionsMenu', 'Screenshot-Mode-Button', 'Info-Button', 'hud-settings', 'video-settings', 'audio-settings', 'keyboard-settings', 'misc-settings', 'messageSend', 'teleportButton']) {
             $(id).addEventListener('mouseenter', () => this.parent.sfx.play('snd_hover.ogg'));
             $(id).addEventListener('pointerdown', () => this.parent.sfx.play('snd_select.ogg'));
         };
@@ -253,13 +255,23 @@ World.prototype.HUD = class HUD {
                 }
             }
 
+            const parsedMessage = data.msg.replace(/(?:\s|^)@-?[0-9]{1,12}, ?-?[0-9]{1,12}(?=\s|$)/g, str => {
+                const nums = str.match(/-?\d+/g).map(Number),
+                    rand = Math.random().toString(16);
+
+                setTimeout(() => {
+                    document.getElementById('locationLink' + rand).onclick = () => this.parent.teleportTo(nums[0], nums[1]);
+                }, 10);
+                return '<span class="location-link" id="locationLink' + rand + '"> @' + nums[0] + ',' + nums[1] + ' </span>';
+            });
+
             const messageHTML = `
                 ${user.elevated ? `<img class="chat-avatar" src="${user.discordInfo.avatarURL}"></img> ` : ''}
                 &lt<span class="username" id="chat_usn_but_${user.id}_${msgId}" style="color: ${user.color.hexString}">${(user.name)}</span>&gt
-                <span class="message" ${mentionsme ? 'style="background-color: #FFCB0811 !important"' : ''} id="${msgId}_body">${data.msg}</span>
+                <span class="message" ${mentionsme ? 'style="background-color: #FFCB0811 !important"' : ''} id="${msgId}_body">____MESSAGE_</span>
                 <span class="message-timestamp">${hours}:${minutes}:${seconds}</span>`
 
-            msg.innerHTML = messageHTML;
+            msg.innerHTML = messageHTML.replace('____MESSAGE_', parsedMessage);
             el.appendChild(msg);
 
             document.getElementById(`chat_usn_but_${user.id}_${msgId}`).addEventListener('click', this.showuserinfo.bind(this, user.id));
@@ -285,7 +297,7 @@ World.prototype.HUD = class HUD {
                         }
                         window.setTimeout(fadeOutRemove, 500, e, o);
                     };
-                previewMessage.innerHTML = messageHTML;
+                previewMessage.innerHTML = messageHTML.replace('____MESSAGE_', data.msg.trim());
                 $('chat_preview').appendChild(previewMessage);
                 $('chat_preview').scrollTo(0, $('chat_preview').scrollHeight);
                 fadeOutRemove(previewMessage, 1);
@@ -370,12 +382,7 @@ World.prototype.HUD = class HUD {
             this.awaitingTeleportRequest = false;
             const info = this.createNotification(200, 100, 7000);
             if (data.accepted) {
-                if (this.parent.usingWebGl) {
-                    this.parent.camera.pos.x = data.coords.x;
-                    this.parent.camera.pos.y = data.coords.y;
-                } else {
-                    this.parent.camera._offset = Vector.from(data.coords);
-                }
+                this.parent.teleportTo(data.coords);
                 this.parent.canvas.drawAll();
                 info.body.innerHTML = `<span>${data.target.name} has accepted your teleport request!</span>`
             } else {
@@ -747,6 +754,8 @@ World.prototype.HUD = class HUD {
             };
         });
 
+        this.el.get('chatToggle').onclick = this.showChat;
+
         $('keyboard-settings').addEventListener('click', () => {
             $('blur').style.display = 'block';
             const wrapper = this.createPopUp(400, 340, ['settings', 'keyboard-settings']);
@@ -971,6 +980,20 @@ World.prototype.HUD = class HUD {
         window.addEventListener('touchend', removeMobile);
     }
 
+    showChat = () => {
+        this.el.get('chatWrap').style.marginLeft = '0px';
+        const but = this.el.get('chatToggle');
+        but.onclick = this.hideChat;
+        but.innerHTML = '-';
+    }
+
+    hideChat = () => {
+        this.el.get('chatWrap').style.marginLeft = '-300px';
+        const but = this.el.get('chatToggle');
+        but.onclick = this.showChat;
+        but.innerHTML = '+';
+    }
+
     openTelMenu = () => {
         if (this.awaitingTeleportRequest) {
             const info = this.createNotification(200, 90, 3000);
@@ -1002,7 +1025,7 @@ World.prototype.HUD = class HUD {
                     <div class="drop-down-anchor unselectable">
                         <span>Users</span>
                         <div>
-                            ${Array.from(this.parent.users).filter(u => u[0].id != this.parent.socket.id).map(u => `<span id="${u[0]}">${u[1].name}</span><br>`).join('')}
+                            ${Array.from(this.parent.users).filter(u => u[0] != this.parent.socket.id && u[1].name != '__@@UNINITIALISED').map(u => `<span id="${u[0]}">${u[1].name}</span><br>`).join('')}
                         </div>
                     </div>
                     <button class="tel-button" id="userTel">Teleport</button>
@@ -1013,32 +1036,12 @@ World.prototype.HUD = class HUD {
         document.getElementById('coordsTel').addEventListener('click', () => {
             const x = Math.min(2147483647 * this.parent.CHUNK_SIZE, Math.max(-2147483648 * this.parent.CHUNK_SIZE, +document.getElementById('coordsTelX').value)),
                 y = Math.min(2147483647 * this.parent.CHUNK_SIZE, Math.max(-2147483648 * this.parent.CHUNK_SIZE, +document.getElementById('coordsTelY').value));
-            if (this.parent.usingWebGl) {
-                const seenNotifs = JSON.parse(this.parent.settings.hasSeenPopup);
-                if (!seenNotifs.floatingPointInaccuracies && (Math.abs(x) > 95000 || Math.abs(y) > 95000)) {
-                    const info = this.createNotification(200, 200, 10000);
-                    info.body.innerHTML = `
-                        <span>You might experience graphical issues with the GPU rendering mode after teleporting big distances!</span>
-                        <button id="switchToCPUBut">Switch to CPU Rendering</button>
-                    `
-                    document.getElementById('switchToCPUBut').onclick = () => {
-                        this.parent.preferCTX = true;
-                        this.parent.changeToCTX();
-                        info.close();
-                    }
-                    seenNotifs.floatingPointInaccuracies = true;
-                    this.parent.settings.set('hasSeenPopup', JSON.stringify(seenNotifs));
-                }
-                this.parent.camera.pos.x = x / this.parent.CHUNK_SIZE;
-                this.parent.camera.pos.y = y / this.parent.CHUNK_SIZE;
-            } else {
-                this.parent.camera._offset = new Vector(x, y).sub(new Vector(window.innerWidth, window.innerHeight).mult(0.5).div(this.parent.camera.tileSize).div(this.parent.CHUNK_SIZE)).div(this.parent.CHUNK_SIZE);
-            }
-            this.parent.canvas.drawAll();
+
+            this.parent.teleportTo(x, y);
             closeWin();
         });
 
-        Array.from(this.parent.users).filter(u => u[0].id != this.parent.socket.id).forEach(u => {
+        Array.from(this.parent.users).filter(u => u[0] != this.parent.socket.id && u[1].name != '__@@UNINITIALISED').forEach(u => {
             document.getElementById(u[0]).addEventListener('click', () => {
                 const target = document.getElementById('target');
                 target.innerHTML = 'Target: ' + u[1].name;
@@ -1175,23 +1178,17 @@ World.prototype.HUD = class HUD {
     }
 
     TouchEventToMouseEvent = e => {
+        this.parent.isMobile = true;
         const touch = e.touches[e.touches.length - 1] || e.changedTouches[e.changedTouches.length - 1];
+        // if (touch.radiusX) {
+        //     this.parent.fingerSize = Math.max(touch.radiusX, touch.radiusY);
+        // }
         touch.button = (touch.buttons = true);
         return touch;
     }
 
     updateHash = () => {
-        let pos;
-        if (!this.parent.camera.screenshotMode) {
-            if (this.parent.usingWebGl) {
-                pos = Vector.from(this.parent.camera.pos);
-            } else {
-                pos = Vector.from(this.parent.camera._offset).add(new Vector(window.innerWidth, window.innerHeight).mult(0.5).div(this.parent.camera.tileSize).div(this.parent.CHUNK_SIZE));
-            }
-        } else pos = Vector.from(this.parent.camera.screenshotFocusLocation);
-        this.changingHash = true;
-
-        const res = pos.mult(this.parent.CHUNK_SIZE).floor().toString()
+        const res = this.parent.getCenteredCoords().floor();
 
         window.history.pushState({ page: window.history.length }, 'InfiniCanvas', '/@' + res);
 
@@ -1210,7 +1207,6 @@ World.prototype.HUD = class HUD {
         this.el.get('coords').innerHTML = _coords.realFloor().toString();
         this.el.get('fps').innerHTML = (~~this.parent.currentFps).toString().padStart(3, '0') + ' fps';
         this.el.get('ping').innerHTML = ~~this.parent.ping + 'ms';
-        this.el.get('usersOnlineText').innerHTML = this.parent.users.size;
 
         const now = Date.now();
 
@@ -1264,9 +1260,12 @@ World.prototype.HUD = class HUD {
                         }
 
                         this.uCTX.fillStyle = user.color.hexString;
-                        const m = ts / 16,
-                            textWidth = this.uCTX.measureText(user.name).width,
-                            path = new Path2D(`M${px.x},${px.y}a${m},${m},0,0,0,-${m},${m}l0,${m * 17}a${m},${m},0,0,0,${m},${m}a${m},${m},0,0,0,${m * 0.797},${m * -0.398}l${m * 3.123},${m * -3.483}l${m * 3.463},${m * 7.998}c${m * 0.319},${m * 0.738},${m * 1.184},${m * 1.071},${m * 1.916},${m * 0.738}c${m * 0.722},${m * -0.328},${m * 1.042},${m * -1.177},${m * 0.715},${m * -1.9}l${-3.575},${m * -7.916}l${m * 5.561},${m * -0.039}a${m},${m},0,0,0,${m},-${m}a${m},${m},0,0,0,${m * -0.371},${m * -0.777}l${m * -11.846},${m * -11.844}a${m},${m},0,0,0,${m * -0.783},${m * -0.379}z`);
+                        const m = ts / (this.parent.userCoords[i][1].mobile ? 6 : 16),
+                            name = this.parent.userCoords[i][1].mobile ? '📱' + user.name : user.name,
+                            textWidth = this.uCTX.measureText(name).width,
+                            path = this.parent.userCoords[i][1].mobile
+                                ? new Path2D(`M${px.x},${px.y}a${m * 4},${m * 4},0,1,0,0,${m * 8}a${m * 4},${m * 4},0,1,0,0,-${m * 8}zm0,${m * 2}a${m * 2},${m * 2},0,1,1,0,${m * 4}a${m * 2},${m * 2},0,1,1,0,-${m * 4}z`)
+                                : new Path2D(`M${px.x},${px.y}a${m},${m},0,0,0,-${m},${m}l0,${m * 17}a${m},${m},0,0,0,${m},${m}a${m},${m},0,0,0,${m * 0.797},${m * -0.398}l${m * 3.123},${m * -3.483}l${m * 3.463},${m * 7.998}c${m * 0.319},${m * 0.738},${m * 1.184},${m * 1.071},${m * 1.916},${m * 0.738}c${m * 0.722},${m * -0.328},${m * 1.042},${m * -1.177},${m * 0.715},${m * -1.9}l${-3.575},${m * -7.916}l${m * 5.561},${m * -0.039}a${m},${m},0,0,0,${m},-${m}a${m},${m},0,0,0,${m * -0.371},${m * -0.777}l${m * -11.846},${m * -11.844}a${m},${m},0,0,0,${m * -0.783},${m * -0.379}z`);
 
                         if (!(pos.x < px.x || pos.x > px.x + ts * 3 + textWidth || pos.y < px.y - ts * 2 || pos.y > (px.y - 5) + ts * 3)) {
                             this.uCTX.globalAlpha = 0.25;
@@ -1283,7 +1282,7 @@ World.prototype.HUD = class HUD {
                         const clr = user.color,
                             luma = 0.2126 * clr.r + 0.7152 * clr.g + 0.0722 * clr.b;
                         this.uCTX.fillStyle = luma >= 127.5 ? '#000000' : '#ffffff';
-                        this.uCTX.fillText(user.name, px.x + ts * 2 + textWidth * 0.5, px.y - ts * 0.95);
+                        this.uCTX.fillText(name, px.x + ts * 2 + textWidth * 0.5, px.y - ts * 0.95);
                     }
                 } else if (this.parent.verlets.has(id)) {
                     this.parent.verlets.delete(id);
