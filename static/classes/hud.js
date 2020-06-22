@@ -268,8 +268,8 @@ World.prototype.HUD = class HUD {
             const messageHTML = `
                 ${user.elevated ? `<img class="chat-avatar" src="${user.discordInfo.avatarURL}"></img> ` : ''}
                 &lt<span class="username" id="chat_usn_but_${user.id}_${msgId}" style="color: ${user.color.hexString}">${(user.name)}</span>&gt
-                <span class="message" ${mentionsme ? 'style="background-color: #FFCB0811 !important"' : ''} id="${msgId}_body">____MESSAGE_</span>
-                <span class="message-timestamp">${hours}:${minutes}:${seconds}</span>`
+                <span class="message" title="sent at ${hours}:${minutes}:${seconds}" ${mentionsme ? 'style="background-color: #FFCB0811 !important"' : ''} id="${msgId}_body">____MESSAGE_</span>
+            `
 
             msg.innerHTML = messageHTML.replace('____MESSAGE_', parsedMessage);
             el.appendChild(msg);
@@ -319,7 +319,7 @@ World.prototype.HUD = class HUD {
                 seconds = d.getSeconds().toString().padStart(2, '0'),
                 msgId = ~~(Math.random() * 0xfffff);
 
-            msg.innerHTML = `<span class="message" style="color: #FFFF55">${(data.msg)}</span><span class="message-timestamp">${hours}:${minutes}:${seconds}</span>`;
+            msg.innerHTML = `<span class="message" title="sent at ${hours}:${minutes}:${seconds}" style = "color: #FFFF55"> ${(data.msg)}</span>`;
             if (data.user) {
                 msg.addEventListener('click', (e) => this.showuserinfo(data.user, e));
                 msg.classList.add('special-system-message')
@@ -347,7 +347,7 @@ World.prototype.HUD = class HUD {
                         }
                         window.setTimeout(fadeOutRemove, 500, e, o);
                     };
-                previewMessage.innerHTML = `<span class="message" style="color: #FFFF55">${(data.msg)}</span>`
+                previewMessage.innerHTML = `<span class="message" style = "color: #FFFF55"> ${(data.msg)}</span>`
                 $('chat_preview').appendChild(previewMessage);
                 $('chat_preview').scrollTo(0, $('chat_preview').scrollHeight);
                 fadeOutRemove(previewMessage, 1);
@@ -362,8 +362,8 @@ World.prototype.HUD = class HUD {
             const info = this.createNotification(300, 150, 30000),
                 closeFunc = info.close.bind(info);
             info.body.innerHTML = `
-                <span>You have received a teleportation request from ${user.name}!</span>
-                <button id="telAccept">Accept</button><button id="telReject">Decline</button>
+                <span> You have received a teleportation request from ${ user.name} !</span>
+                    <button id="telAccept">Accept</button><button id="telReject">Decline</button>
             `
 
             info.close = function () {
@@ -384,9 +384,9 @@ World.prototype.HUD = class HUD {
             if (data.accepted) {
                 this.parent.teleportTo(data.coords);
                 this.parent.canvas.drawAll();
-                info.body.innerHTML = `<span>${data.target.name} has accepted your teleport request!</span>`
+                info.body.innerHTML = `<span> ${data.target.name} has accepted your teleport request!</span> `
             } else {
-                info.body.innerHTML = `<span>${data.target.name} has rejected your teleport request!</span>`
+                info.body.innerHTML = `<span> ${data.target.name} has rejected your teleport request!</span> `
             }
         })
 

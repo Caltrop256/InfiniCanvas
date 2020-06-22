@@ -104,3 +104,7 @@ dist
 backups/*
 creds.json
 package-lock.json
+canvas.ES5.js
+canvas.ES5.min.js
+canvas.ES6.js
+canvas.ES6.min.js

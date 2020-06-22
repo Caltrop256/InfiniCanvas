@@ -210,6 +210,8 @@ module.exports = class BaseServer {
                 }
             }
 
+            data = data.replace('window.world = ', '');
+
             const out = babel.transform(data, config);
 
             fs.writeFileSync(globalThis.rootDir + '/build/canvas.ES6.js', data);
