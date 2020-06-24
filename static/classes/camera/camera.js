@@ -48,7 +48,21 @@ World.prototype.Camera = class Camera {
             if ((this.__keys.has(this.__validKeys[12]) || this.__keys.has(this.__validKeys[13])) && this.parent.colorPlacer.canvas) {
                 this.parent.colorPlacer.selectedColor--
                 if (this.parent.colorPlacer.selectedColor < 0) this.parent.colorPlacer.selectedColor = 15;
+            };
+
+            if (this.__keys.has(this.__validKeys[14]) || this.__keys.has(this.__validKeys[15])) {
+                this.parent.settings.set('showGrid', !this.parent.settings.showGrid);
+                this.parent.canvas.drawAll();
             }
+
+            if (this.__keys.has(this.__validKeys[16]) || this.__keys.has(this.__validKeys[17])) {
+                this.updateTileSize(this.tileSize + 1);
+            }
+
+            if (this.__keys.has(this.__validKeys[18]) || this.__keys.has(this.__validKeys[19])) {
+                this.updateTileSize(this.tileSize - 1);
+            }
+
 
             this.parent.colorPlacer.lastColorElement = this.parent.colorPlacer.selectedColor;
 
@@ -57,6 +71,23 @@ World.prototype.Camera = class Camera {
                 this.__velocity = Vector.from(v).div((this.tileSize * 1.25) * (this.parent.currentFps * 0.05));
             } else this.__velocity = new Vector();
         }
+    }
+
+    updateTileSize = val => {
+        if (this.tileSize == val || val < 1 || val > 80) return;
+        if (this.parent.usingWebGl) {
+            this.tileSize = val;
+        } else {
+            const winVec = new Vector(window.innerWidth, window.innerHeight).mult(0.5),
+                anchorPoint = this.mouseToTileSpace(winVec);
+            this.tileSize = val;
+            const lastPos = this.mouseToTileSpace(winVec);
+            this._offset.sub(Vector.difference(lastPos, anchorPoint).div(this.parent.CHUNK_SIZE));
+        }
+
+        this.updateChunks(window.innerWidth, window.innerHeight);
+        this.parent.canvas.drawAll();
+        this.parent.hud.updateHash();
     }
 
     updateChunks = (w, h) => this.chunks = new WeakVector(Math.ceil(w / (this.tileSize * this.parent.CHUNK_SIZE)) + 1, Math.ceil(h / (this.tileSize * this.parent.CHUNK_SIZE)) + 1);

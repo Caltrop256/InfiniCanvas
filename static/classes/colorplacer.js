@@ -16,6 +16,7 @@ World.prototype.ColorPlacer = class ColorPlacer {
         this.hoveringHud = true;
 
         this.lastColorElement = 0;
+        this.forced = false;
 
         this.verletEntity = undefined;
         this.placeAnimationTimer = 0;
@@ -64,10 +65,10 @@ World.prototype.ColorPlacer = class ColorPlacer {
             this.parent.hud.el.get('rateLimitbar').style.width = ((this.ratelimit - remaining) / this.ratelimit * 90) + 'px';
             this.parent.hud.el.get('rateLimitCooldownText').innerHTML = (minutes.toString().length < 2 ? '0' + minutes : minutes) + ' : ' + (seconds.toString().length < 2 ? '0' + seconds : seconds);
             if (remaining < 0) this.activate();
-            return;
+            if (!this.forced) return;
         }
 
-        if (!this.canvas) return;
+        if (!this.canvas && !this.forced) return;
         for (let i = 0; i < this.hideableEls.length; ++i) {
             const info = this.rects.get(this.hideableEls[i]);
             if (this.pointIntersectsBoundingRect(this.lastMousePos.x, this.lastMousePos.y, info.rect)) {
@@ -82,6 +83,7 @@ World.prototype.ColorPlacer = class ColorPlacer {
                 this.rects.set(this.hideableEls[i], info);
             }
         }
+        if (!this.canvas) return;
         this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
         if (this.placeAnimationTimer) {
             this.placeAnimationTimer--;
@@ -93,7 +95,23 @@ World.prototype.ColorPlacer = class ColorPlacer {
             if (!this.placeAnimationTimer) {
                 this.parent.sfx.play('snd_place.ogg');
                 this.parent.socket.emit('placeTile', { v: this.finalPlacement, c: this.selectedColor });
-                this._destroyCanvas();
+                if (this.parent.settings.autoTile) {
+                    this.canvas.remove();
+                    this.canvas = undefined;
+                    window.removeEventListener('touchend', this.upFunc);
+                    window.removeEventListener('touchcancel', this.cancelTile);
+                    window.removeEventListener('touchmove', this.touchMove);
+                    setTimeout(() => {
+                        this.handleMouseDown(this.selectedColor, {
+                            clientX: this.lastMousePos.x,
+                            clientY: this.lastMousePos.y
+                        }, true);
+                        this.forced = true;
+                        this.hoveringHud = this.pointIntersectsBoundingRect(this.lastMousePos.x, this.lastMousePos.y, this.rectData);
+                    })
+                } else {
+                    this._destroyCanvas();
+                }
             }
         } else {
             if (!this.hoveringHud) {
@@ -128,7 +146,7 @@ World.prototype.ColorPlacer = class ColorPlacer {
 
     deactivate = () => {
         if (!this.active) return;
-        if (this.canvas) this._destroyCanvas();
+        if (this.canvas && !this.forced) this._destroyCanvas();
         this.active = false;
         this.domEl.style.filter = 'grayscale(100%)';
         this.parent.hud.el.get('rateLimitCooldown').style.top = '40px';
@@ -173,8 +191,8 @@ World.prototype.ColorPlacer = class ColorPlacer {
 
     pointIntersectsBoundingRect = (x, y, rect) => !(x < rect.left || x > (rect.left + rect.width) || y < rect.top || y > (rect.top + rect.height));
 
-    handleMouseDown = (i, e) => {
-        if (this.placeAnimationTimer || !this.active) return;
+    handleMouseDown = (i, e, force) => {
+        if ((this.placeAnimationTimer || !this.active) && !force) return;
         this.parent.sfx.play('snd_select.ogg');
         this.parent.changeToCTX();
         this.lastMousePos = new Vector(e.clientX, e.clientY);
@@ -214,7 +232,7 @@ World.prototype.ColorPlacer = class ColorPlacer {
     }
     upFunc = (e) => {
         this._lock(e);
-        if (this.placeAnimationTimer) return;
+        if (this.placeAnimationTimer || !this.active) return;
 
         window.removeEventListener('touchend', this.upFunc);
         window.removeEventListener('touchcancel', this.cancelTile);

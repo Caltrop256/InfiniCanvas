@@ -452,20 +452,7 @@ World.prototype.HUD = class HUD {
 
         $('mobileZoomSlider').addEventListener('input', () => {
             const val = ~~$('mobileZoomSlider').value;
-            if (val == this.parent.camera.tileSize) return;
-            if (this.parent.usingWebGl) {
-                this.parent.camera.tileSize = val;
-            } else {
-                const winVec = new Vector(window.innerWidth, window.innerHeight).mult(0.5),
-                    anchorPoint = this.parent.camera.mouseToTileSpace(winVec);
-                this.parent.camera.tileSize = val;
-                const lastPos = this.parent.camera.mouseToTileSpace(winVec);
-                this.parent.camera._offset.sub(Vector.difference(lastPos, anchorPoint).div(this.parent.CHUNK_SIZE));
-            }
-
-            this.parent.camera.updateChunks(window.innerWidth, window.innerHeight);
-            this.parent.canvas.drawAll();
-            this.updateHash();
+            this.parent.camera.updateTileSize(val);
         })
 
         $('Screenshot-Mode-Button').onclick = this.enterScreenshotMode;
@@ -759,29 +746,40 @@ World.prototype.HUD = class HUD {
         $('keyboard-settings').addEventListener('click', () => {
             $('blur').style.display = 'block';
             const wrapper = this.createPopUp(400, 340, ['settings', 'keyboard-settings']);
+            wrapper.style.overflowY = 'scroll';
+            wrapper.style.overflowX = 'hidden';
 
             wrapper.innerHTML = `
                 <h1>Key Bindings</h1>
                 <div>
-                    <span>move Up</span><input id="key0"><input id="key4">
+                    <span>move up</span><input id="key0"><input id="key4">
                 </div>
                 <div>
-                    <span>move Left</span><input id="key1"><input id="key5">
+                    <span>move left</span><input id="key1"><input id="key5">
                 </div>
                 <div>
-                    <span>move Down</span><input id="key2"><input id="key6">
+                    <span>move down</span><input id="key2"><input id="key6">
                 </div>
                 <div>
                     <span>move right</span><input id="key3"><input id="key7">
                 </div>
                 <div>
-                    <span>get last tile</span><input id="key8"><input id="key9">
+                    <span>get tile</span><input id="key8"><input id="key9">
                 </div>
                 <div>
                     <span>next tile</span><input id="key10"><input id="key11">
                 </div>
                 <div>
-                    <span>previous tile</span><input id="key12"><input id="key13">
+                    <span>last tile</span><input id="key12"><input id="key13">
+                </div>
+                <div>
+                    <span>toggle grid</span><input id="key14"><input id="key15">
+                </div>
+                <div>
+                    <span>zoom in</span><input id="key16"><input id="key17">
+                </div>
+                <div>
+                    <span>zoom out</span><input id="key18"><input id="key19">
                 </div>
                 <button id="closeBindSet" class="close-button">Close</button>
             `
@@ -790,7 +788,7 @@ World.prototype.HUD = class HUD {
 
             const currentBindings = this.parent.settings.keybinds;
 
-            for (let i = 0; i < 14; ++i) {
+            for (let i = 0; i < currentBindings.length; ++i) {
                 const el = document.getElementById('key' + i);
                 el.type = 'text';
                 el.value = currentBindings[i];
@@ -1074,7 +1072,7 @@ World.prototype.HUD = class HUD {
                 v1 = new Vector(e.touches[1].clientX, e.touches[1].clientY),
                 distance = v0.distance(v1),
                 anchorPoint = this.parent.camera.mouseToTileSpace(this.centerOfPinchStart),
-                nextTileSize = Math.max(4, Math.min(40, this.parent.camera.tileSize - (Math.sign(this.pinchStartDist - distance))));
+                nextTileSize = Math.max(1, Math.min(80, this.parent.camera.tileSize - (Math.sign(this.pinchStartDist - distance))));
 
             if (isNaN(nextTileSize)) return;
             this.parent.camera.tileSize = nextTileSize;

@@ -85,8 +85,8 @@ World.prototype.RenderingContext2dCanvas = class RenderingContext2dCanvas extend
             this.parent.socket.emit('requestChunkData', requestArr);
         }
         this.parent.hud.updateOtherUserPos();
+        this.drawGrid(renderInfo);
     }
-
 
     drawChunk = (v, r) => {
         const sprite = this.sprites.get(v.toString());
@@ -100,6 +100,7 @@ World.prototype.RenderingContext2dCanvas = class RenderingContext2dCanvas extend
                 sprite.loaded = true;
                 this.spriteCache.delete(sprite.pos.toString());
                 this.drawChunk(v, r);
+                this.drawGrid(r);
             }
 
             const oldSpr = this.spriteCache.get(sprite.pos.toString());
@@ -110,6 +111,33 @@ World.prototype.RenderingContext2dCanvas = class RenderingContext2dCanvas extend
             this._ctx.drawImage(sprite.texture, 0, 0, this.parent.CHUNK_SIZE, this.parent.CHUNK_SIZE, v.x * r.ts * this.parent.CHUNK_SIZE - r.ox, v.y * r.ts * this.parent.CHUNK_SIZE - r.oy, this.parent.CHUNK_SIZE * r.ts, this.parent.CHUNK_SIZE * r.ts);
         }
         return true;
+    }
+
+    drawGrid = renderInfo => {
+        if (this.parent.settings.showGrid && this.parent.camera.tileSize >= 8) {
+            const upperLeft = Vector.from(this.parent.camera._offset).mult(this.parent.CHUNK_SIZE).floor(),
+                bottomRight = Vector.from(upperLeft).add(new Vector(window.innerWidth, window.innerHeight).div(renderInfo.ts)).floor();
+
+
+            this._ctx.strokeStyle = '#000000';
+            this._ctx.lineWidth = 1;
+            for (let x = upperLeft.x; x <= bottomRight.x + 1; ++x) {
+                const sx = ~~(x * renderInfo.ts - renderInfo.ox)
+                this._ctx.beginPath();
+                this._ctx.moveTo(sx, 0);
+                this._ctx.lineTo(sx, window.innerHeight);
+                this._ctx.closePath();
+                this._ctx.stroke();
+            }
+            for (let y = upperLeft.y; y <= bottomRight.y + 1; ++y) {
+                const sy = ~~(y * renderInfo.ts - renderInfo.oy)
+                this._ctx.beginPath();
+                this._ctx.moveTo(0, sy);
+                this._ctx.lineTo(window.innerWidth, sy);
+                this._ctx.closePath();
+                this._ctx.stroke();
+            }
+        }
     }
 
     clear = () => this._ctx.clearRect(0, 0, window.innerWidth, window.innerHeight);

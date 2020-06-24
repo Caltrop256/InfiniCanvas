@@ -13,6 +13,8 @@ World.prototype.Settings = class Settings {
             this.previewMessages = typeof localStorage.previewMessages != 'undefined' ? JSON.parse(localStorage.previewMessages) : true;
             this.showSystemMessages = typeof localStorage.showSystemMessages != 'undefined' ? JSON.parse(localStorage.showSystemMessages) : true;
             this.usesDiscord = typeof localStorage.usesDiscord != 'undefined' ? JSON.parse(localStorage.usesDiscord) : false;
+            this.showGrid = typeof localStorage.showGrid != 'undefined' ? JSON.parse(localStorage.showGrid) : false;
+            this.autoTile = typeof localStorage.autoTile != 'undefined' ? JSON.parse(localStorage.autoTile) : false;
             this.nonce = (localStorage.nonce || '').trim();
             this.oauthState = (localStorage.oauthState || '').trim();
             this.muted = typeof localStorage.muted != 'undefined' ? JSON.parse(localStorage.muted) : false;
@@ -26,7 +28,7 @@ World.prototype.Settings = class Settings {
             setTimeout(callback, 0);
         }
 
-        this.accountInitialised = (/^[a-zA-z0-9 \-_.$@€?!#`´']{3,16}$/).test(this.name);
+        this.accountInitialised = (/^[a-zA-z0-9 \-_.$€?!#`´']{3,16}$/).test(this.name);
     }
 
     __setDefVals = () => {
@@ -37,8 +39,9 @@ World.prototype.Settings = class Settings {
         this.set('_pos', '0,0');
         this.set('fpslocked', false);
         this.set('nDesiredFps', 60);
-        this.set('keybinds', ['w', 'a', 's', 'd', 'arrowup', 'arrowleft', 'arrowdown', 'arrowright', 'e', 'q', 'shift', '', 'control', '']);
+        this.set('keybinds', ['w', 'a', 's', 'd', 'arrowup', 'arrowleft', 'arrowdown', 'arrowright', 'e', 'q', 'shift', '', 'control', '', 'g', '', '+', '8', '-', '2']);
         this.set('notifyMe', true);
+        this.set('autoTile', false);
         this.set('previewMessages', true);
         this.set('showSystemMessages', true);
         this.set('usesDiscord', false);
@@ -47,6 +50,7 @@ World.prototype.Settings = class Settings {
         this.set('muted', false);
         this.set('audioVolume', 0.7);
         this.set('transmitPosition', true);
+        this.set('showGrid', false);
         this.set('showOtherPlayers', window.__Path2DSupport);
         this.set('visibleElements', JSON.stringify({
             fpsWrap: false,
