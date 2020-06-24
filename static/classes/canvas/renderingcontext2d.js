@@ -118,7 +118,6 @@ World.prototype.RenderingContext2dCanvas = class RenderingContext2dCanvas extend
             const upperLeft = Vector.from(this.parent.camera._offset).mult(this.parent.CHUNK_SIZE).floor(),
                 bottomRight = Vector.from(upperLeft).add(new Vector(window.innerWidth, window.innerHeight).div(renderInfo.ts)).floor();
 
-
             this._ctx.strokeStyle = '#000000';
             this._ctx.lineWidth = 1;
             for (let x = upperLeft.x; x <= bottomRight.x + 1; ++x) {

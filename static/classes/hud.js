@@ -573,7 +573,7 @@ World.prototype.HUD = class HUD {
 
         $('hud-settings').addEventListener('click', () => {
             $('blur').style.display = 'block';
-            const wrapper = this.createPopUp(400, 350, ['settings']),
+            const wrapper = this.createPopUp(400, 400, ['settings']),
                 els = JSON.parse(this.parent.settings.visibleElements);
 
             wrapper.innerHTML = `
@@ -604,6 +604,12 @@ World.prototype.HUD = class HUD {
             wrapper.innerHTML += `
                 <div style="border-top: 2px solid white; width: 100%"></div>
                 <div class="switch">
+                    <input id="autoTile" type="checkbox" ${this.parent.settings.autoTile ? 'checked' : ''} class="switch-input" />
+                    <label for="autoTile" id="autoTile_label" class="switch-label">Switch</label>  
+                </div>
+                <span>Auto-reselect previous tile</span>
+                <br>
+                <div class="switch">
                     <input id="prevMsg" type="checkbox" ${this.parent.settings.previewMessages ? 'checked' : ''} class="switch-input" />
                     <label for="prevMsg" id="prevMsg_label" class="switch-label">Switch</label>  
                 </div>
@@ -621,6 +627,12 @@ World.prototype.HUD = class HUD {
                 </div>
                 <span>Show other Players</span>
                 <br>
+                <div class="switch">
+                    <input id="showGrid" type="checkbox" ${this.parent.settings.showGrid ? 'checked' : ''} class="switch-input" />
+                    <label for="showGrid" id="showGrid_label" class="switch-label">Switch</label>  
+                </div>
+                <span>Show Grid</span>
+                <br>
                 <button id="closeHudSet" class="close-button">Close</button>
             `;
             wrapper.style.display = 'block';
@@ -631,6 +643,15 @@ World.prototype.HUD = class HUD {
 
             document.getElementById('prevMsg_label').onclick = () => {
                 this.parent.settings.set('previewMessages', !document.getElementById('prevMsg').checked);
+            }
+
+            document.getElementById('autoTile_label').onclick = () => {
+                this.parent.settings.set('autoTile', !document.getElementById('autoTile').checked);
+            }
+
+            document.getElementById('showGrid_label').onclick = () => {
+                this.parent.settings.set('showGrid', !document.getElementById('showGrid').checked);
+                this.parent.canvas.drawAll();
             }
 
             document.getElementById('showOtherPlayers_label').onclick = () => {
