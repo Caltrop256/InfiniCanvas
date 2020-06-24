@@ -21,8 +21,7 @@
     "markdown-it": "^11.0.0",
     "mysql": "^2.18.1",
     "socket.io": "^2.3.0",
-    "web-push": "^3.4.4",
-    "ws": "^7.3.0"
+    "web-push": "^3.4.4"
   },
   "devDependencies": {
     "@babel/plugin-transform-runtime": "^7.9.0",
