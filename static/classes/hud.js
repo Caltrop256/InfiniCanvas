@@ -51,7 +51,7 @@ World.prototype.HUD = class HUD {
                 users = Array.from(this.parent.users);
 
             let str = `
-                <div>
+                <div style="overflow-y: auto">
             `, n = 0;
 
             for (let i = 0; i < users.length; ++i) {
@@ -257,7 +257,7 @@ World.prototype.HUD = class HUD {
 
             const parsedMessage = data.msg.replace(/(?:\s|^)@-?[0-9]{1,12}, ?-?[0-9]{1,12}(?=\s|$)/g, str => {
                 const nums = str.match(/-?\d+/g).map(Number),
-                    rand = Math.random().toString(16);
+                    rand = Math.floor(Math.random() * 999).toString(16);
 
                 setTimeout(() => {
                     document.getElementById('locationLink' + rand).onclick = () => this.parent.teleportTo(nums[0], nums[1]);
@@ -268,10 +268,10 @@ World.prototype.HUD = class HUD {
             const messageHTML = `
                 ${user.elevated ? `<img class="chat-avatar" src="${user.discordInfo.avatarURL}"></img> ` : ''}
                 &lt<span class="username" id="chat_usn_but_${user.id}_${msgId}" style="color: ${user.color.hexString}">${(user.name)}</span>&gt
-                <span class="message" title="sent at ${hours}:${minutes}:${seconds}" ${mentionsme ? 'style="background-color: #FFCB0811 !important"' : ''} id="${msgId}_body">____MESSAGE_</span>
+                <span class="message" title="sent at ${hours}:${minutes}:${seconds}" ${mentionsme ? 'style="background-color: #FFCB0811 !important"' : ''} id="${msgId}_body">${parsedMessage}</span>
             `
 
-            msg.innerHTML = messageHTML.replace('____MESSAGE_', parsedMessage);
+            msg.innerHTML = messageHTML;
             el.appendChild(msg);
 
             document.getElementById(`chat_usn_but_${user.id}_${msgId}`).addEventListener('click', this.showuserinfo.bind(this, user.id));
@@ -297,7 +297,7 @@ World.prototype.HUD = class HUD {
                         }
                         window.setTimeout(fadeOutRemove, 500, e, o);
                     };
-                previewMessage.innerHTML = messageHTML.replace('____MESSAGE_', data.msg.trim());
+                previewMessage.innerHTML = messageHTML.replace(/class="location-link" id="locationLink[a-fA-F0-9]+">/g, 'class="location-link">');
                 $('chat_preview').appendChild(previewMessage);
                 $('chat_preview').scrollTo(0, $('chat_preview').scrollHeight);
                 fadeOutRemove(previewMessage, 1);
@@ -382,7 +382,7 @@ World.prototype.HUD = class HUD {
             this.awaitingTeleportRequest = false;
             const info = this.createNotification(200, 100, 7000);
             if (data.accepted) {
-                this.parent.teleportTo(data.coords);
+                this.parent.teleportTo(Vector.from(data.coords).mult(this.parent.CHUNK_SIZE));
                 this.parent.canvas.drawAll();
                 info.body.innerHTML = `<span> ${data.target.name} has accepted your teleport request!</span> `
             } else {

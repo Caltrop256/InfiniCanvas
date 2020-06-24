@@ -124,7 +124,7 @@ module.exports = class Manager {
             const ip = crypto.createHash('sha256').update(socket.conn.remoteAddress).digest('base64');
             if (!this.bannedUsers.has(ip)) {
                 this.users.set(socket.id, new this.User(this, socket, ip));
-                if (~~this.ipsConnected.get(ip) > 10) this.banUser(socket.id, 3600000);
+                //if (~~this.ipsConnected.get(ip) > 10) this.banUser(socket.id, 3600000);
                 socket.emit('requestUserData');
             } else {
                 socket.emit('banned', 0);

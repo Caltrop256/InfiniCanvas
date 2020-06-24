@@ -140,13 +140,15 @@ module.exports = class EventHandler {
             const v = Vector.from(data.v).realFloor();
             v.x %= global.CHUNK_SIZE;
             v.y %= global.CHUNK_SIZE;
-            if (v.y < 0) v.y = global.CHUNK_SIZE + v.y;
-            if (v.x < 0) v.x = global.CHUNK_SIZE + v.x;
+            if (v.y < 0) v.y += global.CHUNK_SIZE;
+            if (v.x < 0) v.x += global.CHUNK_SIZE;
+
+            console.log(v.x, v.y);
 
             if (chunkInfo) {
                 const chunkCacheData = new ChunkData(chunkInfo.data);
 
-                chunkCacheData.data[(v.y) * global.CHUNK_SIZE + (v.x)] = (~~data.c) % global.CHUNK_SIZE;
+                chunkCacheData.data[(v.y) * global.CHUNK_SIZE + (v.x)] = (~~data.c) % 16;
 
                 this.chunkCache.set(chunk.toString(), chunkCacheData);
                 this.io.emit('chunkUpdate', { v: chunk.toString(), d: chunkCacheData.toString() });
@@ -154,7 +156,7 @@ module.exports = class EventHandler {
                 this.getChunks([chunk.toString()]).then(chunkInfo => {
                     const chunkCacheData = new ChunkData(Array.from(chunkInfo)[0][1].data);
 
-                    chunkCacheData.data[(v.y) * global.CHUNK_SIZE + (v.x)] = (~~data.c) % global.CHUNK_SIZE;
+                    chunkCacheData.data[(v.y) * global.CHUNK_SIZE + (v.x)] = (~~data.c) % 16;
 
                     this.chunkCache.set(chunk.toString(), chunkCacheData);
                     this.io.emit('chunkUpdate', { v: chunk.toString(), d: chunkCacheData.toString() });

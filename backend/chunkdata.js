@@ -7,11 +7,11 @@ class ChunkData {
     toString = (size = global.CHUNK_SIZE) => {
         let str = '',
             n = 0;
-        for (let i = 0; i < size * size; ++i) {
+        for (let i = 0; i <= size * size; ++i) {
             if (i) {
                 if (this.data[i] == this.data[i - 1]) {
                     n++
-                    if (i == (size * size) - 1) str += (n.toString(16) + ':' + this.data[i - 1].toString(16) + ',');
+                    if (i == size * size) str += (n.toString(16) + ':' + this.data[i - 1].toString(16) + ',');
                 } else {
                     if (n > 1) str += (n.toString(16) + ':' + this.data[i - 1].toString(16) + ',');
                     else str += (this.data[i - 1].toString(16) + ',');
