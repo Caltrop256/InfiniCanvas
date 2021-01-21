@@ -20,7 +20,7 @@
     "greenlock": "^4.0.4",
     "markdown-it": "^11.0.0",
     "mysql": "^2.18.1",
-    "socket.io": "^2.3.0",
+    "socket.io": "^2.4.0",
     "web-push": "^3.4.4"
   },
   "devDependencies": {
