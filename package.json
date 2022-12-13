@@ -16,7 +16,7 @@
     "canvas": "^2.6.1",
     "cloudflare": "^2.7.0",
     "discord-oauth2": "^2.2.0",
-    "express": "^4.17.1",
+    "express": "^4.17.3",
     "greenlock": "^4.0.4",
     "markdown-it": "^11.0.0",
     "mysql": "^2.18.1",
